@@ -1,16 +1,17 @@
+import tkinter
 import pyttsx3
 import pyautogui 
 import sounddevice 
 import cv2
 import playsound
 import speech_recognition as sr
-from tkinter import filedialog
+from tkinter import filedialog, ttk
 from scipy.io.wavfile import write
 from tkinter import *
-# from tkinter import ttk
 import requests,json 
 import tkinter.scrolledtext as scrolledtext
 import tkinter.messagebox as tmsg
+from tkcalendar import Calendar     
 import sqlite3
 import datetime 
 import os 
@@ -19,6 +20,9 @@ import random
 import smtplib
 import psutil 
 import math
+from functools import partial
+import string
+import pyperclip
 
 
 class SetColor:
@@ -60,6 +64,8 @@ class SetColor:
             elif col_choice in ['white']:
                 bcolor="white"
                 break
+            elif col_choice in ['nothing','none']:
+                break
             else:
                 SR.speak("dont match with any choice.please tell index from given options")
 
@@ -94,6 +100,8 @@ class SetColor:
                 break
             elif col_choice in ['white']:
                 tcolor="white"
+                break
+            elif col_choice in ['nothing','none']:
                 break
             else:
                 SR.speak("dont match with any choice.please tell color from given options")
@@ -136,28 +144,40 @@ class GetColor:
 
 
 class SpeakRecognition:
-    '''
+    """
     A class that will set the voice engine, take command from user,
     update the screen according to the command, clear the text in the
     screen,speak out the response with or without printing it in screen.
-    '''
+    """
     def __init__(self,scrollable_text):
         self.scrollable_text = scrollable_text
      
     # database connection
     conn = sqlite3.connect('Hazel.db')
     mycursor=conn.cursor()
-
+    
     engine=pyttsx3.init('sapi5')
     voices=engine.getProperty('voices')
     engine.setProperty('voice',voices[1].id)
+
+    """ VOICE RATE"""
+    rate = engine.getProperty('rate')               # getting details of current speaking rate
+    # print(rate)
+    engine.setProperty('rate',mycursor.execute('select rate from speech_rate').fetchone()[0])     # setting up new voice rate in words per minute
+
+    """VOLUME"""   
+    volume = engine.getProperty('volume')           #getting to know current volume level (min=0 and max=1)
+    # print(volume)                                 
+    engine.setProperty('volume',(mycursor.execute('select vol from volume').fetchone()[0])/10)    # setting up volume level  between 0 and 1
+    
+    conn.commit()
+    conn.close()
 
     scrollable_text=None
 
     def STS(self,scrollable_text):
         '''This is scrollable text setter '''
         self.scrollable_text=scrollable_text
-        # print("hi")
 
     def updating_ST(self,data):
         '''Updating the scrollable text area with a preceding newline'''
@@ -166,7 +186,6 @@ class SpeakRecognition:
         self.scrollable_text.configure(state='disabled')
         self.scrollable_text.see('end')
         self.scrollable_text.update()
-        # print("hi")
 
     def updating_ST_No_newline(self,data):
         '''Updating the scrollable text area without a preceding newline'''
@@ -202,26 +221,43 @@ class SpeakRecognition:
             self.updating_ST("\nListening...")
             recog.pause_threshold = 1
             recog.energy_threshold = 2000
-            # r.energy_threshold = 45.131829621150224
-            #print(r.energy_threshold)
+            # recog.energy_threshold = 45.131829621150224
+            # print(r.energy_threshold)
             audio=recog.listen(source)
         try:
             self.updating_ST("Recognizing...")
             query= recog.recognize_google(audio,language="en-in")
+            # query = recog.recognize_google_cloud(audio,language='en-in')
             self.updating_ST(f"You: {query}\n")
         except Exception as e:
-            # print(e)
             self.updating_ST("Say that again please...")
             return 'None'
         return query
 
 
+class Calender:
+    """
+    A class to display calendar with current date marking.
+    """
+    def __init__(self,today):
+        todays_date = today
+
+    def showCalender():
+        my_w = tkinter.Tk()
+        my_w.geometry("400x400+200+100")
+        cal = Calendar(my_w,selectmode='none',firstweekday='sunday',weekenddays=[6,7],borderwidth=10)
+        # cal.grid(row=1,column=1,padx=10)
+        cal.pack(fill='both',expand=True)
+        my_w.mainloop()
+
+        
+
 class Note:
-    '''
+    """
     it takes the content of the text document as command and
     save it in the "Notes" folder as the making date as its
     filename
-    '''
+    """
     def takeNote(self,data):
         date=datetime.datetime.now()
         filename=str(date).replace(':','-')+'-note.txt'
@@ -236,10 +272,10 @@ class Note:
 
 
 class screenshot:
-    '''
+    """
     it captures the current screen and save it with current 
     date and time as its filename in "Screenshots" folder
-    '''
+    """
     def takeSS(self):
         img_captured=pyautogui.screenshot()
         a=os.getcwd()
@@ -253,11 +289,11 @@ class screenshot:
 
 
 class VoiceRecorder: 
-    '''
+    """
     it records the voice of user for 10 secs and
     save it in the "Recordings" folder as current 
     date and time as its filename
-    '''
+    """
     def Record(self,scrollable_text):
         SR=SpeakRecognition(scrollable_text)
         SR.speak("This recording is of 10 seconds.")
@@ -277,11 +313,11 @@ class VoiceRecorder:
 
 
 class camera:
-    '''
+    """
     it captures the image of the user with system's
     webcam and save it in "Camera" folder with filename
     as current date and time
-    '''
+    """
     def takePhoto(self):
         self.videoCaptureObject = cv2.VideoCapture(0)
         self.result = True
@@ -302,14 +338,14 @@ class camera:
 
 
 class TextToSpeech:
-    '''
+    """
     This will open a new window as child window of assistant
     and take text input in a textarea.
     there will be 3 buttons
         --> Speak button for speaking the text typed in textarea
         --> Clear button for clearing the text in textarea
         --> Open button for selecting a file and write its contents in text area 
-    '''
+    """
     def __init__(self):
         self.root=Tk()
         self.root.resizable(0,0)
@@ -350,14 +386,58 @@ class TextToSpeech:
             pass
 
 
+class PasswordGenerator:
+    """
+    Generate random password.User can select complexity of the password.
+    As per the complexity assistant will suggest a password in a new window
+    and user can copy that password from the window.
+    """
+
+    def copyPSWD(self,pswd):
+        pyperclip.copy(pswd)
+
+    def showpswd(self,data,pswd,wroot):
+        self.root=Toplevel(master=wroot)
+        self.root.title("Password Generator")
+        self.root.iconbitmap('icons/PasswordGenerator.ico')
+        style = ttk.Style()
+        style.configure('W.TButton',font=('calibri', 10, 'bold'),foreground ='purple',borderwidth ='4',background="pink")
+        self.root.geometry("360x120+540+300")
+        
+        ttk.Label(self.root,text=data,font=("comicsansms",9,'bold')).pack()
+        ttk.Button(self.root,text='Copy to clipboard',style = 'W.TButton',command=partial(self.copyPSWD,pswd)).pack(pady=20)
+        self.root.resizable(0,0)
+        self.root.mainloop()
+        del self.root
+
+    def givePSWD(self,scrollable_text,wroot):
+        SR=SpeakRecognition(scrollable_text)
+        SR.speak("What type of password you want?")
+        SR.updating_ST("\nPassword Level we have:-\n\nPoor Level\nAverage Level\nStrong Level\n")
+        while(True):
+            query=SR.takeCommand().lower()
+            if ('poor' in query):
+                self.showpswd("Your Password is : "+"".join(random.sample(string.ascii_letters,7)),"".join(random.sample(string.ascii_letters,7)),wroot)
+                break
+            elif ('average' in query):
+                self.showpswd("Your Password is : "+"".join(random.sample(string.ascii_letters+string.digits,10)),"".join(random.sample(string.ascii_letters+string.digits,10)),wroot)
+                break
+            elif ('strong' in query):
+                self.showpswd("Your Password is : "+"".join(random.sample(string.ascii_letters+string.digits+string.punctuation,13)),"".join(random.sample(string.ascii_letters+string.digits+string.punctuation,13)),wroot)
+                break
+            else:
+                SR.speak("Please say it again")
+        del SR
+
+
 class StonePaperScissor:
-    '''
+    """
     A class for playing stone paper scissor game.
     There will bw 3 rounds and user can select there option as 
     voice input, and computer will be the opponent and it will
     select its choice as random from a list.Those who win most rounds 
     will be the winner of the game.
-    '''
+    """
     def start(self,scrollable_text):
         SR=SpeakRecognition(scrollable_text)
         list1=['stone','paper','scissor']
@@ -420,11 +500,11 @@ class StonePaperScissor:
 
 
 class SettingWindow:
-    '''
+    """
     Assistant's settings window. It can be opened by command or clicking
     the menu button named settings. Used for setting the speech_rate and
     volume of the assistant.
-    '''
+    """
 
     def Apply(self):
         #Database connection
@@ -474,11 +554,12 @@ class SettingWindow:
 
 
 class SystemInfo:
-    '''
+    """
     A class for retrieving the system specs
-    '''
+    """
 
-    def convert_size(size_bytes):
+    def convert_size(self,size_bytes):
+        # print(size_bytes)
         if size_bytes == 0:
             return "0B"
         size_name = ("B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB")
@@ -488,19 +569,19 @@ class SystemInfo:
         # print("%s %s" % (s, size_name[i]))
         return "%s %s" % (s, size_name[i])
     
-    def system_stats(self,si):
+    def system_stats(self):
         cpu_stats = str(psutil.cpu_percent())
         battery_percent = psutil.sensors_battery().percent
-        memory_in_use = si.convert_size(psutil.virtual_memory().used)
-        total_memory = si.convert_size(psutil.virtual_memory().total)
+        memory_in_use = self.convert_size(psutil.virtual_memory().used)
+        total_memory = self.convert_size(psutil.virtual_memory().total)
         final_res = f"Currently {cpu_stats} percent of CPU, {memory_in_use} of RAM out of total {total_memory}  is being used and battery level is at {battery_percent} percent"
         return final_res
 
 
 class MailSend:
-    '''
+    """
     A class for sending email messages
-    '''
+    """
 
     def __init__(self, semail,spass,remail,msg):
         self.sender_mail = semail
@@ -513,8 +594,8 @@ class MailSend:
             mail = smtplib.SMTP('smtp.gmail.com', 587)
             mail.ehlo()
             mail.starttls()
-            mail.login(self.sender_mail, self.sender_password)
-            mail.sendmail(self.sender_email, self.receiver_email, self.message)
+            mail.login(self.sender_mail, self.sender_passwd)
+            mail.sendmail(self.sender_mail, self.receiver_mail, self.message)
             mail.close()
             return True
         except Exception as e:
@@ -523,9 +604,9 @@ class MailSend:
             
 
 class News:
-    '''
+    """
     A class for retrieving the top 5 news of all catagories
-    '''
+    """
 
     def __init__(self,scrollable_text):
         self.SR=SpeakRecognition(scrollable_text)
@@ -542,11 +623,11 @@ class News:
 
 
 class Weather:
-    '''
+    """
     A class for retrieving the current weather information.
     Includes temperature,latitude,longitude,wind speed and
     description of weather.
-    '''
+    """
 
     def show(self,scrollable_text):
         SR=SpeakRecognition(scrollable_text)

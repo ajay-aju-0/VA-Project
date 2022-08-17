@@ -2,41 +2,87 @@ import datetime
 import wikipedia 
 import webbrowser 
 import os 
-import random,requests
+import random
+import requests
 import sys 
+import time
 import threading 
 import playsound
 from tkinter import *
-from tkinter import scrolledtext        
+from tkinter import scrolledtext
 from PIL import ImageTk,Image
 from functools import partial
-import sqlite3
 import wolframalpha
-import getpass,calendar
+import getpass
 import pywhatkit 
+import pyautogui
 import pyjokes
 import Annex
-import config
+from config.config import *
 
 '''
 * add games like pong,snake,and blocks game
-* if possible add cricket game(odd or even) else any other game
 * if possible add image to sketch also.....
 '''
 
 try:
-    app = wolframalpha.Client("JPK4EE-L7KR3XWP9A") # API key for wolframalpha
+    app = wolframalpha.Client(wolframalpha_id) # API key for wolframalpha
 except Exception as e:
     pass
 
-#-------EMAIL dictionary for sending emails----------------------------------
+
+#==================== Memory for Greetings ====================================
+
+morning = ['Good Morning!!!','Isn\'t it a beautiful day today?','May this day bring new opportunities and successes for you. Good morning!',
+            'This is not just another day. It is yet another chance to make your dreams come true. Get up and get started. Good morning!',
+            'Wishing you a day full of sunny smiles and happy thoughts. Good morning!','Enjoy life now! Good morning!!!',
+            'Good morning. Wake up and be awesome!','Just the thought of you brightens up my morning. Good morning!',
+            'Morning comes whether you set the alarm or not. Wake up, sleepyhead!','As the day begins, remember that I am your friend…you’re welcome!'
+        ]
+
+afternoon = ['Good Afternoon!','Thinking of you today — have a good afternoon!','A wish for a wonderful afternoon for you and yours!',
+             'Here\'s a wish for a fun afternoon and the gentle breeze that comes with it.','Half of the day is over; have a marvelous afternoon and enjoy the rest of the day!',
+             'Remember, every day I am wishing you the best morning, afternoon, and night!','Today, there will be a beautiful sunset after you have a good afternoon!',
+             'Wishing you a happy day and a fabulous afternoon!','May this afternoon bring you delightful surprises.',
+             'The afternoon is when the day starts to slow down. Enjoy yourself!'
+        ]
+
+evening = ['Good Evening!!','Lots of love for this sweet evening.','Zestful energetic evening',
+           'Zestful exciting evening!','Hey delightful evening.','Mesmerizing evening for you.',
+           'This evening is as adorable as you.'
+        ]
+
+night = ['It is a night time.','Night time code time!!','This night is dark as your IDE\'s theme.',
+         'Hey, Owl how is your work going?','Night men are smart men.','Nothing like a nighttime stroll to give you ideas..',
+         'I like the night. Without the dark, we\'d never see the stars.Night is to see dreams and day is to make them true.',
+         'The darkest night produce the brightest stars.','The nighttime of the body is the daytime of the soul.',
+         'Night is beautiful when you are happy, calming when you are stressed and lonesome when you are missing someone.',
+         'Night time is the time when our thinking and feeling gains it peakness!'
+        ]
+
+#============================================================================
+
+
+#==================== Memory for 'how are you' query ==========================
+
+howareyou= ['Good to hear from you! How may I help','I\'m fine, thank you. What can I do for you?',
+            'Very Good, How may I help you','Wonderful thanks, What can I do for you?',
+            'I\'m well, thank you, how can I help','So glad to hear your voice, How can I help you?',
+            'I\'m doing great, thanks for asking. Anything I can help with'
+        ]
+
+#============================================================================
+
+
+#================ EMAIL dictionary for sending emails =======================
 
 EMAIL_DIC = {
     'myself': 'ajaypadmanabhan01@gmail.com',
     'my official email': 'ajaypadmanabhan01@gmail.com',
 }
 
-#----------------------------------------------------------------------------
+#============================================================================
+
 
 #setting chrome path
 chrome_path="C:/Program Files (x86)/Google/Chrome/Application/chrome.exe %s"
@@ -53,6 +99,12 @@ def there_exists(terms,query):
         if term in query:
                 return True
 
+
+def commandsList():
+    '''show the command to which voice assistant is registered with'''
+    os.startfile('Commands List.txt')
+
+
 def clearScreen():
     '''clearing the scrollable textbox'''
     SR.scrollable_text_clearing()
@@ -60,35 +112,21 @@ def clearScreen():
 
 #Greeting the user at the start
 def greet():
-    try:
-        ''' connecting to database '''
-        conn = sqlite3.connect('Hazel.db')
-        mycursor=conn.cursor()
-
-    except Exception as e:
-        SR.speak("unable to connect to database,Please check your database file,or internet!")
-
     ''' greeting according to time '''
     hour=int(datetime.datetime.now().hour)
     if hour>=4 and hour<12:
-        mycursor.execute('select sentence from morning')
-        result=mycursor.fetchall()
-        SR.speak(random.choice(result)[0])
+        greet = random.choice(morning)
+        SR.speak(greet)
     elif hour>=12 and hour<18:
-        mycursor.execute('select sentence from afternoon')
-        result=mycursor.fetchall()
-        SR.speak(random.choice(result)[0])
-    elif hour>=18 and hour<21:
-        mycursor.execute('select sentence from evening')
-        result=mycursor.fetchall()
-        SR.speak(random.choice(result)[0])
+        greet = random.choice(afternoon)
+        SR.speak(greet)
+    elif hour>=18 and hour<20:
+        greet = random.choice(evening)
+        SR.speak(greet)
     else:
-        mycursor.execute('select sentence from night')
-        result=mycursor.fetchall()
-        SR.speak(random.choice(result)[0])
+        greet = random.choice(night)
+        SR.speak(greet)
 
-    conn.commit()
-    conn.close()
     SR.speak("\nMyself Hazel. How may I help you?")
 
 
@@ -101,29 +139,24 @@ def mainframe():
             query = SR.takeCommand().lower()  #converted the command in lower case for ease of matching
     
 
-            #Asking for name
+            # Asking for name
             if there_exists(["what is your name","what's your name","tell me your name",'who are you'],query):
                 SR.speak("My name is Hazel and I'm here to serve you.")  
 
 
-            #How are you
+            # How are you
             elif there_exists(['how are you'],query):
-                conn = sqlite3.connect('Hazel.db')
-                mycursor=conn.cursor()
-                mycursor.execute('select sentences from howareyou')
-                result=mycursor.fetchall()
-                temporary_data=random.choice(result)[0]
-                SR.updating_ST_No_newline(temporary_data+'😃\n')
-                SR.nonPrintSpeak(temporary_data)
-                conn.close() 
+                reply = random.choice(howareyou)
+                SR.updating_ST_No_newline(reply+'😃\n')
+                SR.nonPrintSpeak(reply)
 
 
-            #what is my name
+            # what is my name
             elif there_exists(['what is my name','tell me my name',"i don't remember my name"],query):
                 SR.speak("Your name is "+str(getpass.getuser()))
 
 
-            #time and date
+            # time and date
             elif there_exists(['the time'],query):
                 strTime =datetime.datetime.now().strftime("%H:%M:%S")
                 SR.speak(f"Sir, the time is {strTime}")
@@ -134,13 +167,16 @@ def mainframe():
                 SR.speak(f"Today is {datetime.datetime.now().strftime('%A')}")
 
 
-            #calendar
+            # display calendar
             elif there_exists(['show me calendar','display calendar'],query):
                 todays_date = datetime.date.today()
-                SR.updating_ST(calendar.calendar(todays_date.year))
+                # SR.updating_ST(calendar.calendar(todays_date.year))
+                obj = Annex.Calender(todays_date)
+                obj.showCalender()
+                break
 
 
-            #opening software applications
+            # opening software applications
             elif there_exists(['open code','open visual studio code','open vs code','open vscode'],query):
                 SR.nonPrintSpeak('opening visual studio code')
                 codepath = "C:\\Users\\ajayaju\\AppData\\Local\\Programs\\Microsoft VS Code\\Code.exe"
@@ -206,24 +242,34 @@ def mainframe():
                 SR.speak("Opening VLC media player")
                 os.startfile(r"C:\\Program Files (x86)\\VideoLAN\\VLC\\vlc.exe")
                 break
+            
+            # switching the windows
+            elif there_exists(['switch the window','switch window'],query):
+                SR.speak("Okay sir, Switching the window")
+                pyautogui.keyDown("alt")
+                pyautogui.press("tab")
+                time.sleep(1)
+                pyautogui.keyUp("alt")
 
 
-            #system stats
+            # system stats
             elif there_exists(['system','system stats','my system stats'],query):
                 info = Annex.SystemInfo()
-                sys_info = info.system_stats(info)
+                sys_info = info.system_stats()
                 # print(sys_info)
                 SR.speak(sys_info)
+                break
 
 
-            #system's current ip address
+            # system's current ip address
             elif there_exists(['ip address','ip'],query):
                 ip = requests.get('https://api.ipify.org').text
                 # print(ip)
                 SR.speak(f"Your ip address is {ip}")
+                break
             
 
-            #bluetooth file sharing
+            # bluetooth file sharing
             elif there_exists(['send some files through bluetooth','send file through bluetooth','bluetooth sharing','bluetooth file sharing','open bluetooth'],query):
                 SR.speak("Opening bluetooth...")
                 os.startfile(r"C:\\Windows\\System32\\fsquirt.exe")
@@ -233,10 +279,10 @@ def mainframe():
                 break
 
 
-            #sending email's
+            # sending email's
             elif there_exists(['email','send mail'],query):
-                sender_email = config.email
-                sender_password = config.email_password
+                sender_email = email
+                sender_password = email_password
 
                 try:
                     SR.speak("Whom do you want to email sir ?")
@@ -262,7 +308,7 @@ def mainframe():
                 break
 
             
-            #wikipedia search
+            # wikipedia search
             elif there_exists(['search wikipedia for','from wikipedia'],query):
                 SR.speak("Searching wikipedia...")
                 if 'search wikipedia for' in query:
@@ -286,7 +332,7 @@ def mainframe():
                 break
 
 
-            #who is searcing mode
+            # who is searcing mode
             elif there_exists(['who is','who the heck is','who the hell is','who is this'],query):
                 query=query.replace("wikipedia","")
                 results=wikipedia.summary(query,sentences=1)
@@ -295,8 +341,8 @@ def mainframe():
                 break
                 
 
-            #what is meant by
-            elif there_exists(['what is meant by','what is mean by'],query):
+            # what is meant by
+            elif there_exists(['what is meant by','what is mean by','what is'],query):
                 results=wikipedia.summary(query,sentences=2)
                 SR.speak("According to wikipedia:\n")
                 SR.speak(results)
@@ -313,19 +359,28 @@ def mainframe():
                     SR.speak(next(res.results).text)
                 except:
                     print("Sorry, but there is a little problem while fetching the result.")
+                break
 
+            elif there_exists(['calculate'],query):
+                try:
+                    res=app.query(query)
+                    SR.speak(next(res.results).text)
+                except:
+                    print("Sorry, but there is a little problem while fetching the result.")
+                break
 
-            #what is the capital
+            # what is the capital
             elif there_exists(['what is the capital of','capital of','capital city of'],query):
                 try:
                     res=app.query(query)
                     SR.speak(next(res.results).text)
                 except:
                     print("Sorry, but there is a little problem while fetching the result.")
+                break
 
 
-            #google, youtube and location
-            #playing on youtube 
+            # google, youtube and location
+            # playing on youtube 
             elif there_exists(['open youtube and play','on youtube'],query):
                 if 'on youtube' in query:
                     SR.speak("Opening youtube")
@@ -343,7 +398,7 @@ def mainframe():
                 webbrowser.get(chrome_path).open("https://www.youtube.com")
                 break
 
-            #opening google and search
+            # opening google and search
             elif there_exists(['open google and search','google and search'],query):
                 url='https://google.com/search?q='+query[query.find('for')+4:]
                 webbrowser.get(chrome_path).open(url)
@@ -353,7 +408,7 @@ def mainframe():
                 webbrowser.get(chrome_path).open("https://www.google.com")
                 break
 
-            #finding location
+            # finding location
             elif there_exists(['find location of','show location of','find location for','show location for'],query):
                 if 'of' in query:
                     url='https://google.nl/maps/place/'+query[query.find('of')+3:]+'/&amp'
@@ -373,7 +428,7 @@ def mainframe():
                 loc = Ip_info['region']
                 SR.speak(f"You must be somewhere in {loc}")
 
-            #image search
+            # image search
             elif there_exists(['show me images of','images of','display images'],query):
                 url="https://www.google.com/search?tbm=isch&q="+query[query.find('of')+3:]
                 webbrowser.get(chrome_path).open(url)
@@ -402,7 +457,7 @@ def mainframe():
                 break
 
 
-            #jokes
+            # jokes
             elif there_exists(['tell me joke','tell me a joke','tell me some jokes','i would like to hear some jokes',"i'd like to hear some jokes",
                             'can you please tell me some jokes','i want to hear a joke','i want to hear some jokes','please tell me some jokes',
                             'would like to hear some jokes','tell me more jokes'],query):
@@ -412,42 +467,57 @@ def mainframe():
                 SR.speak(pyjokes.get_joke(language="en", category="all"))
 
 
-            #weather report
+            # weather report
             elif there_exists(['weather report','weather'],query):
                 Weather=Annex.Weather()
                 Weather.show(scrollable_text)
                 break
 
 
-            #it will give the temperature
+            # it will give the temperature
             elif there_exists(['temperature'],query):
                 try:
                     res=app.query(query)
                     SR.speak(next(res.results).text)
                 except:
                     print("Internet Connection Error")
+                break
 
 
-            #making note
+            # password generator
+            elif there_exists(['suggest me a password','password suggestion','i want a password','give me a password'],query):
+                m3=Annex.PasswordGenerator()
+                m3.givePSWD(scrollable_text,root)
+                del m3
+                break
+
+
+            # making note
             elif there_exists(['make a note','take note','take a note','note it down','make note','remember this as note','open notepad and write'],query):
                 SR.speak("What would you like to write down?")
                 data=SR.takeCommand()
                 n=Annex.Note()
                 n.takeNote(data)
                 SR.speak("I have a made a note of that.")
+                
+            # closing the notepad
+            elif there_exists(['close the note','close notepad'],query):
+                SR.speak("Okay sir, closing notepad")
+                os.system("taskkill /f /im notepad.exe")
                 break
 
 
-            #taking photo
+            # taking photo
             elif there_exists(['take a photo','take a selfie','take my photo','take photo','take selfie','one photo please','click a photo'],query):
                 takephoto=Annex.camera()
-                Location=takephoto.takePhoto()
-                os.startfile(Location)
+                imgLocation=takephoto.takePhoto()
+                os.startfile(imgLocation)
                 del takephoto
                 SR.speak("Captured picture is stored in Camera folder.")
+                break
 
 
-            #screenshot
+            # screenshot
             elif there_exists(['take screenshot','take a screenshot','screenshot please','capture my screen'],query):
                 SR.speak("Taking screenshot")
                 SS=Annex.screenshot()
@@ -495,22 +565,33 @@ def mainframe():
 
             #play game
             elif there_exists(['would like to play some games','play some games','would like to play some game','want to play some games','want to play game','want to play games','play games','open games','play game','open game'],query):
-                SR.speak("We have only 1 game right now.\n")
+                SR.speak("We have only 2 game right now.\n")
                 SR.updating_ST_No_newline('1.')
                 SR.speak("Stone Paper Scissor")
-                SR.speak("\nwould you like to play it(yes/no)")
-                SR.updating_ST("would you like to play it(yes/no)")
-                choice=SR.takeCommand().lower()
-                if there_exists(['yes','yeah'],choice):
-                    SR.speak("Opening stone paper scissor...")
-                    sps=Annex.StonePaperScissor()
-                    sps.start(scrollable_text)
-                    break
-                elif there_exists(['no','dont'],choice):
-                    SR.speak("closing game section")
-                    break
-                else:
-                    SR.speak("i think its a no....closing game section")
+                SR.updating_ST_No_newline('2.')
+                SR.speak("Snake")
+                SR.updating_ST_No_newline('3.')
+                SR.speak("Pong")
+                SR.speak("\nTell us your choice:")
+                while(True):
+                    query=SR.takeCommand().lower()
+                    if ('stone' in query) or ('paper' in query):
+                        SR.speak("Opening stone paper scissor...")
+                        sps=Annex.StonePaperScissor()
+                        sps.start(scrollable_text)
+                        break
+                    elif ('snake' in query):
+                        SR.speak("Opening snake game...")
+                        from Games.Snake.snake import start
+                        start()
+                        break
+                    elif ('pong' in query):
+                        SR.speak("Opening pong game...")
+                        from Games.Pong.pong import start
+                        start()
+                        break
+                    else:
+                        SR.speak("It did not match the option that we have. \nPlease say it again.")
                 break
 
 
@@ -538,7 +619,17 @@ def mainframe():
                     else:
                         SR.speak("choice doesn't match any......please retry")
                 break
-                        
+            
+
+            #hiding and visibling all files in this folder
+            elif there_exists(['hide all files','hide this folder'],query):
+                os.system("attrib +h /s /d")
+                SR.speak("Sir, all the files in this folder are now hidden")
+
+            elif there_exists(['visible','make files visible'],query):
+                os.system("attrib -h /s /d")
+                SR.speak("Sir, all the files in this folder are now visible to everyone. I hope you are taking this decision in your own peace")
+
 
             #passing if nothing in the query
             elif there_exists(['none'],query):
@@ -552,13 +643,15 @@ def mainframe():
         
 
             #Halting the assistant
-            elif there_exists(['exit','quit','shutdown','shut up','goodbye','shut down','good bye'],query):
+            elif there_exists(['exit','quit','shutdown','shut up','goodbye','shut down','good bye','offline','bye'],query):
                 SR.speak("shutting down")
                 sys.exit()
 
             else:
                 SR.speak("Sorry it did not match with any commands that i'm registered with. Please say it again.")
 
+    except RuntimeError as r:
+        pass
 
     except Exception as e:
         SR.speak('unable to start ,Please check your connection')
@@ -585,9 +678,9 @@ class MainframeThread(threading.Thread):
 
 
 def Launching_thread():
-    '''
-        creating thread for smooth execution of the assistant
-    '''
+    """
+    creating thread for smooth execution of the assistant
+    """
     Thread_ID=generate(1000)
     global MainframeThread_object
     MainframeThread_object=MainframeThread(Thread_ID.__next__(),"Mainframe")
@@ -622,7 +715,7 @@ if __name__=="__main__":
     Listen_Button.place(x=450,y=470)
     myMenu=Menu(root)
     m1=Menu(myMenu,tearoff=0) #tearoff=0 means the submenu can't be teared off from the window
-    m1.add_command(label='Commands List')
+    m1.add_command(label='Commands List',command=commandsList)
     myMenu.add_cascade(label="Help",menu=m1)
     stng_win=Annex.SettingWindow()
     myMenu.add_cascade(label="Settings",command=partial(stng_win.settingWindow,root))
