@@ -1,6 +1,5 @@
+import wolframalpha
 import datetime
-import wikipedia 
-import webbrowser 
 import os 
 import random
 import requests
@@ -8,16 +7,20 @@ import sys
 import time
 import threading 
 import playsound
-from tkinter import *
-from tkinter import scrolledtext
-from PIL import ImageTk,Image
-from functools import partial
-import wolframalpha
 import getpass
+import wikipedia
+import webbrowser 
 import pywhatkit 
 import pyautogui
 import pyjokes
 import Annex
+import geocoder
+from tkinter import *
+from tkinter import scrolledtext
+from PIL import ImageTk,Image
+from functools import partial
+from geopy.geocoders import Nominatim
+from geopy.distance import great_circle
 from config.config import *
 
 '''
@@ -25,10 +28,9 @@ from config.config import *
 * if possible add image to sketch also.....
 '''
 
-try:
-    app = wolframalpha.Client(wolframalpha_id) # API key for wolframalpha
-except Exception as e:
-    pass
+
+app_id = wolframalpha_id     # API key for wolframalpha
+
 
 
 #==================== Memory for Greetings ====================================
@@ -85,7 +87,7 @@ EMAIL_DIC = {
 
 
 #setting chrome path
-chrome_path="C:/Program Files (x86)/Google/Chrome/Application/chrome.exe %s"
+chrome_path="C://Program Files//Google//Chrome//Application//chrome.exe %s"
 
 
 #setting variables for background and text colours
@@ -98,6 +100,18 @@ def there_exists(terms,query):
     for term in terms:
         if term in query:
                 return True
+
+
+def computational_intelligence(question):
+    try:
+        client = wolframalpha.Client(app_id)
+        answer = client.query(question)
+        answer = next(answer.results).text
+        # print(answer)
+        return answer
+    except:
+        SR.speak("Sorry sir I couldn't fetch your question's answer. Please try again ")
+        return None
 
 
 def commandsList():
@@ -163,14 +177,13 @@ def mainframe():
             elif there_exists(['the date'],query):  
                 strDay=datetime.date.today().strftime("%B %d, %Y")
                 SR.speak(f"Today is {strDay}")
-            elif there_exists(['what day it is','what day is today','which day is today',"today's day name please"],query):
+            elif there_exists(['what day it is','what day is today','which day is today',"today's day name please",'the day'],query):
                 SR.speak(f"Today is {datetime.datetime.now().strftime('%A')}")
 
 
             # display calendar
-            elif there_exists(['show me calendar','display calendar'],query):
+            elif there_exists(['show me calendar','display calendar','show calendar'],query):
                 todays_date = datetime.date.today()
-                # SR.updating_ST(calendar.calendar(todays_date.year))
                 obj = Annex.Calender(todays_date)
                 obj.showCalender()
                 break
@@ -178,70 +191,158 @@ def mainframe():
 
             # opening software applications
             elif there_exists(['open code','open visual studio code','open vs code','open vscode'],query):
-                SR.nonPrintSpeak('opening visual studio code')
-                codepath = "C:\\Users\\ajayaju\\AppData\\Local\\Programs\\Microsoft VS Code\\Code.exe"
-                os.startfile(codepath)
+                try:
+                    os.startfile("C:\\Users\\ajayaju\\AppData\\Local\\Programs\\Microsoft VS Code\\Code.exe")
+                    SR.nonPrintSpeak('opening visual studio code')
+                except Exception as e:
+                    SR.speak('sorry i am not able to find the path of vs code,please make sure you installed it')
                 break
 
             elif there_exists(['open wordpad'],query):
-                SR.nonPrintSpeak('opening wordpad')
-                codepath = "C:\\Windows\\WinSxS\\amd64_microsoft-windows-wordpad_31bf3856ad364e35_10.0.22000.1_none_83fe16d971ae9831\\wordpad.exe"
-                os.startfile(codepath)
+                try:
+                    os.startfile("C:\\Windows\\WinSxS\\amd64_microsoft-windows-wordpad_31bf3856ad364e35_10.0.22000.1_none_83fe16d971ae9831\\wordpad.exe")
+                    SR.nonPrintSpeak('opening wordpad')
+                except Exception as e:
+                    SR.speak('sorry i am not able to find the path of wordpad,please make sure you installed it')
                 break
 
             elif there_exists(['open microsoft word','open word'],query):
-                SR.nonPrintSpeak('opening microsoft word')
-                codepath = "C:\\Program Files\\Microsoft Office\\root\\Office16\\WINWORD.EXE"
-                os.startfile(codepath)
+                try:
+                    os.startfile("C:\\Program Files\\Microsoft Office\\root\\Office16\\WINWORD.EXE")
+                    SR.nonPrintSpeak('opening microsoft word')
+                except Exception as e:
+                    SR.speak('sorry i am not able to find the path of microsoft word,please make sure you installed it')
                 break
 
             elif there_exists(['open powerpoint','open presentation','open powerpoint presentation','powerpoint presentation'],query):
-                SR.nonPrintSpeak('opening microsoft powerpoint presentation')
-                codepath = "C:\\Program Files\\Microsoft Office\\root\\Office16\\POWERPNT.EXE"
-                os.startfile(codepath)
+                try:
+                    os.startfile("C:\\Program Files\\Microsoft Office\\root\\Office16\\POWERPNT.EXE")
+                    SR.nonPrintSpeak('opening microsoft powerpoint presentation')
+                except Exception as e:
+                    SR.speak('sorry i am not able to find the path of powerpoint,please make sure you installed it')
+                break
+
+            elif there_exists(['open notepad plus plus','open notepad++','open notepad ++','notepad++','notepad ++'],query):
+                try:
+                    os.startfile("C:\\Program Files\\Notepad++\\notepad++.exe")
+                    SR.speak('Opening notepad++')
+                except Exception as e:
+                    SR.speak('sorry i am not able to find the path of notepad++,please make sure you installed it')
                 break
 
             elif there_exists(['open notepad','start notepad'],query):
-                SR.nonPrintSpeak('opening notepad')
-                codepath = "C:\\Windows\\notepad.exe"
-                os.startfile(codepath)
+                try:
+                    os.startfile("C:\\Windows\\notepad.exe")
+                    SR.nonPrintSpeak('opening notepad')
+                except Exception as e:
+                    SR.speak('sorry i am not able to find the path of notepad,please make sure you installed it')
+                break
+
+            elif there_exists(['open ms paint','open mspaint','open microsoft paint','start microsoft paint','start ms paint'],query):
+                try:
+                    os.startfile('C:\Windows\System32\mspaint.exe')
+                    SR.speak("Opening Microsoft paint....")
+                except Exception as e:
+                    SR.speak('sorry i am not able to find the path of microsoft paint,please make sure you installed it')
+                break
+
+            elif there_exists(['open snipping tool','snipping tool','start snipping tool'],query):
+                try:
+                    os.startfile("C:\Windows\System32\SnippingTool.exe")
+                    SR.speak("Opening snipping tool....")
+                except Exception as e:
+                    SR.speak('sorry i am not able to find the path of snipping tool,please make sure you installed it')
                 break
 
             elif there_exists(['open file manager','file manager','open my computer','my computer','open file explorer','file explorer','open this pc','this pc'],query):
-                SR.speak("Opening File Explorer")
-                os.startfile("C:\Windows\explorer.exe")
+                try:
+                    os.startfile("C:\Windows\explorer.exe")
+                    SR.speak("Opening File Explorer")
+                except Exception as e:
+                    SR.speak('sorry i am not able to open file explorer.i think the path doesn\'t exist')
                 break
 
             elif there_exists(['powershell'],query):
-                SR.speak("Opening powershell")
-                os.startfile(r'C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe')
+                try:
+                    os.startfile(r'C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe')
+                    SR.speak("Opening powershell")
+                except Exception as e:
+                    SR.speak('sorry i am not able to open windows powershell.i think the path doesn\'t exist')
                 break
 
             elif there_exists(['cmd','command prompt','command prom','commandpromt',],query):
-                SR.speak("Opening command prompt")
-                os.startfile(r'C:\\Windows\\System32\\cmd.exe')
+                try:
+                    os.startfile(r'C:\\Windows\\System32\\cmd.exe')
+                    SR.speak("Opening command prompt")
+                except Exception as e:
+                    SR.speak('sorry i am not able to open command prompt.i think the path doesn\'t exist')
                 break
 
             elif there_exists(['show me performance of my system','open performance monitor','performance monitor','performance of my computer','performance of this computer'],query):
-                SR.speak("Opening performance monitor")
-                os.startfile("C:\\Windows\\System32\\perfmon.exe")
+                try:
+                    os.startfile("C:\\Windows\\System32\\perfmon.exe")
+                    SR.speak("Opening performance monitor")
+                except Exception as e:
+                    SR.speak('sorry i am not able to open performance monitor.i think the path doesn\'t exist')
                 break
 
             elif there_exists(['open settings','open control panel','open this computer setting Window','open computer setting Window'   ,'open computer settings','open setting','show me settings','open my computer settings'],query):
-                SR.speak("Opening settings...")
-                os.startfile('C:\\Windows\\System32\\control.exe')
+                try:
+                    os.startfile('C:\\Windows\\System32\\control.exe')
+                    SR.speak("Opening settings...")
+                except Exception as e:
+                    SR.speak('sorry i am not able to open settings.i think the path doesn\'t exist')
                 break
 
             elif there_exists(['open your setting','open your settings','open settiing window','show me setting window','open voice assistant settings'],query):
-                SR.speak("Opening my Setting window..")
-                sett_wind=Annex.SettingWindow()
-                sett_wind.settingWindow(root)
+                try:
+                    SR.speak("Opening my Setting window..")
+                    sett_wind=Annex.SettingWindow()
+                    sett_wind.settingWindow(root)
+                except Exception as e:
+                    SR.speak('sorry i am not able to open my settings now.i will resolve the error and get back to you soon.')
                 break
 
             elif there_exists(['open vlc','vlc media player','vlc player'],query):
-                SR.speak("Opening VLC media player")
-                os.startfile(r"C:\\Program Files (x86)\\VideoLAN\\VLC\\vlc.exe")
+                try:
+                    os.startfile(r"C:\\Program Files (x86)\\VideoLAN\\VLC\\vlc.exe")
+                    SR.speak("Opening VLC media player")
+                except Exception as e:
+                    SR.speak('sorry i am not able to open vlc player.please make sure you installed it')
                 break
+
+            elif there_exists(['windows media player'],query):
+                try:
+                    os.startfile(r"C:\\Program Files (x86)\\Windows Media Player\\wmplayer.exe")
+                    SR.speak("Opening windows media player")
+                except Exception as e:
+                    SR.speak('sorry i am not able to open windows media player.please make sure the path exists')
+                break
+
+            elif there_exists(['open whatsapp'],query):
+                try:
+                    os.startfile('C:\\Users\\ajayaju\\AppData\\Local\\WhatsApp\\WhatsApp.exe')
+                    SR.speak("Opening whatsApp")
+                except Exception as e:
+                    SR.speak('sorry i am not able to open whatsapp.please make sure you installed it')
+                break
+
+            elif there_exists(['open chrome'],query):
+                try:
+                    os.startfile(chrome_path)
+                    SR.speak("Opening chrome browser")
+                except Exception as e:
+                    SR.speak('sorry i am not able to open chrome browser.please make sure you installed it')
+                break
+
+            elif there_exists(['open microsoft edge','microsoft edge'],query):
+                try:
+                    os.startfile("C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe")
+                    SR.speak("Opening microsoft edge browser")
+                except Exception as e:
+                    SR.speak('sorry i am not able to open microsoft edge browser.please make sure you installed it')
+                break
+
             
             # switching the windows
             elif there_exists(['switch the window','switch window'],query):
@@ -250,37 +351,42 @@ def mainframe():
                 pyautogui.press("tab")
                 time.sleep(1)
                 pyautogui.keyUp("alt")
+                break
 
 
             # system stats
             elif there_exists(['system','system stats','my system stats'],query):
-                info = Annex.SystemInfo()
-                sys_info = info.system_stats()
-                # print(sys_info)
-                SR.speak(sys_info)
-                break
-
+                try:
+                    info = Annex.SystemInfo()
+                    sys_info = info.system_stats()
+                    # print(sys_info)
+                    SR.speak(sys_info)
+                except Exception as e:
+                    SR.speak('Not able to fetch system stats.Please try again later...')
+                
 
             # system's current ip address
-            elif there_exists(['ip address','ip'],query):
+            elif there_exists(['ip address','show ip','tell system ip','what\'s my ip'],query):
                 ip = requests.get('https://api.ipify.org').text
                 # print(ip)
                 SR.speak(f"Your ip address is {ip}")
-                break
+                
             
-
             # bluetooth file sharing
             elif there_exists(['send some files through bluetooth','send file through bluetooth','bluetooth sharing','bluetooth file sharing','open bluetooth'],query):
-                SR.speak("Opening bluetooth...")
-                os.startfile(r"C:\\Windows\\System32\\fsquirt.exe")
-                SR.speak("bluetooth is enabled now you can send files through it")
-                SR.speak("opening file explorer for browsing files")
-                os.startfile("C:\Windows\explorer.exe")
+                try:
+                    SR.speak("Opening bluetooth...")
+                    os.startfile(r"C:\\Windows\\System32\\fsquirt.exe")
+                    SR.speak("bluetooth is enabled now you can send files through it")
+                    SR.speak("opening file explorer for browsing files")
+                    os.startfile("C:\Windows\explorer.exe")
+                except Exception as e:
+                    SR.speak('Not able to open bluetooth.try again after sometime...')
                 break
 
 
             # sending email's
-            elif there_exists(['email','send mail'],query):
+            elif there_exists(['email','send mail','send email'],query):
                 sender_email = email
                 sender_password = email_password
 
@@ -305,6 +411,14 @@ def mainframe():
                         SR.speak("I coudn't find the requested person's email in my database. Please try again with a different name")
                 except:
                     SR.speak("Sorry sir. Couldn't send your mail. Please try again")
+                break
+
+
+            #text to speech conversion
+            elif there_exists(['text to speech','convert my notes to voice'],query):
+                SR.speak("Opening Text to Speech mode")
+                TS=Annex.TextToSpeech()
+                del TS
                 break
 
             
@@ -342,7 +456,7 @@ def mainframe():
                 
 
             # what is meant by
-            elif there_exists(['what is meant by','what is mean by','what is'],query):
+            elif there_exists(['what is meant by','what is mean by'],query):
                 results=wikipedia.summary(query,sentences=2)
                 SR.speak("According to wikipedia:\n")
                 SR.speak(results)
@@ -350,33 +464,29 @@ def mainframe():
 
             
             # it will give online results for the query
-            elif there_exists(['search something for me','to do a little search','search mode','i want to search something'],query):
+            elif there_exists(['search something for me','to do a little search','open search mode','i want to search something'],query):
                 SR.speak('What you want me to search for?')
                 query=SR.takeCommand()
                 SR.speak(f"Showing results for {query}")
-                try:
-                    res=app.query(query)
-                    SR.speak(next(res.results).text)
-                except:
-                    print("Sorry, but there is a little problem while fetching the result.")
+                answer = computational_intelligence(query)
+                SR.speak(answer)
                 break
 
-            elif there_exists(['calculate'],query):
-                try:
-                    res=app.query(query)
-                    SR.speak(next(res.results).text)
-                except:
-                    print("Sorry, but there is a little problem while fetching the result.")
+            elif there_exists(['calculate','compute','+','-','*','x','/','plus','add','minus','subtract','divide','multiply','divided','multiplied'],query):
+                answer = computational_intelligence(query)
+                SR.speak(f"the result is {answer}")
                 break
 
             # what is the capital
             elif there_exists(['what is the capital of','capital of','capital city of'],query):
-                try:
-                    res=app.query(query)
-                    SR.speak(next(res.results).text)
-                except:
-                    print("Sorry, but there is a little problem while fetching the result.")
+                answer = computational_intelligence(query)
+                SR.speak(answer)
                 break
+
+            # it will give the temperature
+            elif there_exists(['temperature'],query):
+                answer = computational_intelligence(query)
+                SR.speak(answer)
 
 
             # google, youtube and location
@@ -409,7 +519,7 @@ def mainframe():
                 break
 
             # finding location
-            elif there_exists(['find location of','show location of','find location for','show location for'],query):
+            elif there_exists(['find location of','find the location of','show location of','find location for','find the location for','show location for'],query):
                 if 'of' in query:
                     url='https://google.nl/maps/place/'+query[query.find('of')+3:]+'/&amp'
                     webbrowser.get(chrome_path).open(url)
@@ -418,15 +528,57 @@ def mainframe():
                     url='https://google.nl/maps/place/'+query[query.find('for')+4:]+'/&amp'
                     webbrowser.get(chrome_path).open(url)
                     break
-            elif there_exists(["what is my exact location","What is my location","my current location","exact current location"],query):
+            elif there_exists(["what is my exact location","What is my location","my current location","exact current location",'where is my'],query):
                 url = "https://www.google.com/maps/search/Where+am+I+?/"
-                webbrowser.get().open(url)
                 SR.speak("Showing your current location on google maps...")
+                webbrowser.get(chrome_path).open(url)
                 break
             elif there_exists(["where am i"],query):
-                Ip_info = requests.get('https://api.ipdata.co?api-key=test').json()
-                loc = Ip_info['region']
-                SR.speak(f"You must be somewhere in {loc}")
+                try:
+                    ip_add = requests.get('https://api.ipify.org').text
+                    url = 'https://get.geojs.io/v1/ip/geo/' + ip_add + '.json'
+                    geo_requests = requests.get(url).json()
+                    city = geo_requests['city']
+                    state = geo_requests['region']
+                    if city:
+                        SR.speak(f"You must be somewhere in {city}")
+                    else:
+                        SR.speak(f"You must be somewhere in {state}")
+                except Exception as e:
+                    SR.speak("Sorry sir, I coundn't fetch your current location. Please try again")
+                break
+            elif there_exists(["where is"],query):
+                place = query.split('where is ', 1)[1]
+                try:
+                    webbrowser.open("http://www.google.com/maps/place/" + place + "")
+                    geolocator = Nominatim(user_agent="myGeocoder")
+                    location = geolocator.geocode(place, addressdetails=True)
+                    target_latlng = location.latitude, location.longitude
+                    location = location.raw['address']
+                    city = location.get('city', ''),
+                    state = location.get('state', ''),
+                    country = location.get('country', '')
+
+                    current_loc = geocoder.ip('me')
+                    current_latlng = current_loc.latlng
+                    
+                    distance = str(great_circle(current_latlng, target_latlng))
+                    distance = str(distance.split(' ',1)[0])
+                    distance = round(float(distance), 2)
+
+                    if city:
+                        res = f"{place} is in {state} state and country {country}. It is {distance} km away from your current location"
+                        # print(res)
+                        SR.speak(res)
+
+                    else:
+                        res = f"{state} is a state in {country}. It is {distance} km away from your current location"
+                        # print(res)
+                        SR.speak(res)
+                except:
+                    SR.speak("Sorry sir, I couldn't get the co-ordinates of the location you requested. Please try again")
+                break
+
 
             # image search
             elif there_exists(['show me images of','images of','display images'],query):
@@ -471,18 +623,7 @@ def mainframe():
             elif there_exists(['weather report','weather'],query):
                 Weather=Annex.Weather()
                 Weather.show(scrollable_text)
-                break
-
-
-            # it will give the temperature
-            elif there_exists(['temperature'],query):
-                try:
-                    res=app.query(query)
-                    SR.speak(next(res.results).text)
-                except:
-                    print("Internet Connection Error")
-                break
-
+                
 
             # password generator
             elif there_exists(['suggest me a password','password suggestion','i want a password','give me a password'],query):
@@ -509,10 +650,10 @@ def mainframe():
 
             # taking photo
             elif there_exists(['take a photo','take a selfie','take my photo','take photo','take selfie','one photo please','click a photo'],query):
-                takephoto=Annex.camera()
-                imgLocation=takephoto.takePhoto()
+                photo=Annex.camera()
+                imgLocation=photo.takePhoto()
                 os.startfile(imgLocation)
-                del takephoto
+                del photo
                 SR.speak("Captured picture is stored in Camera folder.")
                 break
 
@@ -535,21 +676,12 @@ def mainframe():
                 break
 
 
-            #text to speech conversion
-            elif there_exists(['text to speech','convert my notes to voice'],query):
-                SR.speak("Opening Text to Speech mode")
-                TS=Annex.TextToSpeech()
-                del TS
-                break
-
-
             #flipping coin
             elif there_exists(["toss a coin","flip a coin","toss"],query):
                 moves=["head", "tails"]
                 cmove=random.choice(moves)
-                playsound.playsound('Sounds/quarter spin flac.mp3')
-                SR.speak("It's " + cmove)
-                break
+                playsound.playsound("Sounds/coinflip.mp3")
+                SR.speak("It's a " + cmove)
 
 
             #Playing music
@@ -671,9 +803,7 @@ class MainframeThread(threading.Thread):
         threading.Thread.__init__(self)
         self.threadID = threadID
         self.name = name
-        # print(threadID,name)
     def run(self):
-        # print("running..")
         mainframe()
 
 
@@ -704,7 +834,7 @@ if __name__=="__main__":
     # print(foreground)
     scrollable_text=scrolledtext.ScrolledText(root,state='disabled',height=15,width=72,wrap=WORD,relief='sunken',bd=5,bg=background,fg=foreground,font='"Times New Roman" 13')
     scrollable_text.place(x=10,y=10)
-    mic_img=Image.open(r'C:\\Users\\ajayaju\\new virtual assistant\\Hazel\\Mic.png')
+    mic_img=Image.open(r'C:\\Users\\ajayaju\\new virtual assistant\\Hazel\\Icons\\Mic.png')
     mic_img=mic_img.resize((55,55),Image.ANTIALIAS)
     mic_img=ImageTk.PhotoImage(mic_img)
     Speak_label=Label(root,text="SPEAK:",fg="white",font='"Times New Roman" 15 ',borderwidth=0,bg='#2c4557')

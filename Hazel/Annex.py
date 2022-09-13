@@ -1,17 +1,18 @@
-import tkinter
 import pyttsx3
 import pyautogui 
 import sounddevice 
 import cv2
 import playsound
+import requests
+import json 
 import speech_recognition as sr
 from tkinter import filedialog, ttk
 from scipy.io.wavfile import write
 from tkinter import *
-import requests,json 
 import tkinter.scrolledtext as scrolledtext
 import tkinter.messagebox as tmsg
-from tkcalendar import Calendar     
+from tkcalendar import Calendar
+from functools import partial
 import sqlite3
 import datetime 
 import os 
@@ -20,9 +21,9 @@ import random
 import smtplib
 import psutil 
 import math
-from functools import partial
 import string
 import pyperclip
+import PyPDF2
 
 
 class SetColor:
@@ -242,15 +243,14 @@ class Calender:
     def __init__(self,today):
         todays_date = today
 
-    def showCalender():
-        my_w = tkinter.Tk()
+    def showCalender(self):
+        my_w = Tk()
         my_w.geometry("400x400+200+100")
         cal = Calendar(my_w,selectmode='none',firstweekday='sunday',weekenddays=[6,7],borderwidth=10)
         # cal.grid(row=1,column=1,padx=10)
         cal.pack(fill='both',expand=True)
         my_w.mainloop()
 
-        
 
 class Note:
     """
@@ -371,16 +371,32 @@ class TextToSpeech:
         self.root.focus_force()
         try:
             file_path=filedialog.askopenfilename(initialdir =r"C:\\Users\\ajayaju\\Documents",title="Select file",filetypes=(('text file',"*.txt"),("All files", "*.*")))
+            print(file_path)
             with open(file_path,'r') as f:
-                g=f.read()
-
-            self.root.focus_force()
-            self.text.delete(1.0,END)
-            self.text.insert(INSERT,g)
-            self.text.update()
-            SR=SpeakRecognition(None)
-            SR.nonPrintSpeak(g)
-            del SR
+                is_pdf = f.name.split('/')[-1].split('.')[-1]
+                
+                if is_pdf == 'pdf':
+                    pdf_file = PyPDF2.PdfFileReader(file_path)
+                    pages = pdf_file.getNumPages()
+                    for page in range(pages):
+                        p = pdf_file.getPage(page)
+                        page_stuff = p.extract_text()
+                        self.root.focus_force()
+                        self.text.delete(1.0,END)
+                        self.text.insert(INSERT,page_stuff)
+                        self.text.update()
+                        SR=SpeakRecognition(None)
+                        SR.nonPrintSpeak(page_stuff)
+                        del SR
+                else:
+                    g = f.read()
+                    self.root.focus_force()
+                    self.text.delete(1.0,END)
+                    self.text.insert(INSERT,g)
+                    self.text.update()
+                    SR=SpeakRecognition(None)
+                    SR.nonPrintSpeak(g)
+                    del SR
         except FileNotFoundError as e:
             self.root.focus_force()
             pass
@@ -392,7 +408,7 @@ class PasswordGenerator:
     As per the complexity assistant will suggest a password in a new window
     and user can copy that password from the window.
     """
-
+    
     def copyPSWD(self,pswd):
         pyperclip.copy(pswd)
 
@@ -438,6 +454,7 @@ class StonePaperScissor:
     select its choice as random from a list.Those who win most rounds 
     will be the winner of the game.
     """
+    
     def start(self,scrollable_text):
         SR=SpeakRecognition(scrollable_text)
         list1=['stone','paper','scissor']

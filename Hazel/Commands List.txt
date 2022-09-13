@@ -24,13 +24,13 @@ But not all alternative will work.
 
 10) find location of (city/country name)
 
-11) What is my exact/current location
+11) What is my exact/ current location/ where am i
 
 12) I want to play some games / i would like to play some games
 
 13) play music
 
-14) what is the date/ time
+14) what is the date/ time/ day
 
 15) suggest me a password/ password suggestion / i want a password
 
@@ -44,9 +44,9 @@ But not all alternative will work.
 
 20) current temperature
 
-21) Voice Calculator
+21) calculate <expression>
 
-22) tell me some jokes
+22) tell me some jokes/ would like to hear some jokes
 
 23) send a whatsapp message
 
@@ -65,3 +65,35 @@ But not all alternative will work.
 30) weather report
 
 31) what is the capital of (country name)
+
+32) change color/change assistant color
+
+33) switch the window
+
+34) system stats
+
+35) ip address
+
+36) send mail
+
+37) calculate
+
+38) show me images of
+
+39) top 5 news
+
+40) close the note/ close notepad
+
+41) hide all files/ hide this folder
+
+42) visible/ make files visible
+
+43) how are you?
+
+43) ask the user name
+
+44) show me calender/ display calender
+
+45) open youtube and play
+
+46) open google and search 
