@@ -190,7 +190,7 @@ def mainframe():
 
 
             # opening software applications
-            elif there_exists(['open code','open visual studio code','open vs code','open vscode'],query):
+            elif there_exists(['open code','open visual studio code','open vs code','open vscode','launch code','launch visual studio code','launch vs code','launch vscode'],query):
                 try:
                     os.startfile("C:\\Users\\ajayaju\\AppData\\Local\\Programs\\Microsoft VS Code\\Code.exe")
                     SR.nonPrintSpeak('opening visual studio code')
@@ -198,7 +198,7 @@ def mainframe():
                     SR.speak('sorry i am not able to find the path of vs code,please make sure you installed it')
                 break
 
-            elif there_exists(['open wordpad'],query):
+            elif there_exists(['open wordpad','launch wordpad'],query):
                 try:
                     os.startfile("C:\\Windows\\WinSxS\\amd64_microsoft-windows-wordpad_31bf3856ad364e35_10.0.22000.1_none_83fe16d971ae9831\\wordpad.exe")
                     SR.nonPrintSpeak('opening wordpad')
@@ -206,7 +206,7 @@ def mainframe():
                     SR.speak('sorry i am not able to find the path of wordpad,please make sure you installed it')
                 break
 
-            elif there_exists(['open microsoft word','open word'],query):
+            elif there_exists(['open microsoft word','open word','launch microsoft word','launch word'],query):
                 try:
                     os.startfile("C:\\Program Files\\Microsoft Office\\root\\Office16\\WINWORD.EXE")
                     SR.nonPrintSpeak('opening microsoft word')
@@ -214,7 +214,7 @@ def mainframe():
                     SR.speak('sorry i am not able to find the path of microsoft word,please make sure you installed it')
                 break
 
-            elif there_exists(['open powerpoint','open presentation','open powerpoint presentation','powerpoint presentation'],query):
+            elif there_exists(['open powerpoint','open presentation','open powerpoint presentation','powerpoint presentation','launch powerpoint','launch presentation','launch powerpoint presentation'],query):
                 try:
                     os.startfile("C:\\Program Files\\Microsoft Office\\root\\Office16\\POWERPNT.EXE")
                     SR.nonPrintSpeak('opening microsoft powerpoint presentation')
@@ -222,7 +222,7 @@ def mainframe():
                     SR.speak('sorry i am not able to find the path of powerpoint,please make sure you installed it')
                 break
 
-            elif there_exists(['open notepad plus plus','open notepad++','open notepad ++','notepad++','notepad ++'],query):
+            elif there_exists(['open notepad plus plus','open notepad++','open notepad ++','notepad++','notepad ++','launch notepad plus plus','launch notepad++','launch notepad ++'],query):
                 try:
                     os.startfile("C:\\Program Files\\Notepad++\\notepad++.exe")
                     SR.speak('Opening notepad++')
@@ -230,7 +230,7 @@ def mainframe():
                     SR.speak('sorry i am not able to find the path of notepad++,please make sure you installed it')
                 break
 
-            elif there_exists(['open notepad','start notepad'],query):
+            elif there_exists(['open notepad','start notepad','launch notepad'],query):
                 try:
                     os.startfile("C:\\Windows\\notepad.exe")
                     SR.nonPrintSpeak('opening notepad')
@@ -238,7 +238,7 @@ def mainframe():
                     SR.speak('sorry i am not able to find the path of notepad,please make sure you installed it')
                 break
 
-            elif there_exists(['open ms paint','open mspaint','open microsoft paint','start microsoft paint','start ms paint'],query):
+            elif there_exists(['open ms paint','open mspaint','open microsoft paint','start microsoft paint','start ms paint','launch ms paint','launch mspaint','launch microsoft paint'],query):
                 try:
                     os.startfile('C:\Windows\System32\mspaint.exe')
                     SR.speak("Opening Microsoft paint....")
@@ -246,7 +246,7 @@ def mainframe():
                     SR.speak('sorry i am not able to find the path of microsoft paint,please make sure you installed it')
                 break
 
-            elif there_exists(['open snipping tool','snipping tool','start snipping tool'],query):
+            elif there_exists(['open snipping tool','snipping tool','start snipping tool','launch snipping tool'],query):
                 try:
                     os.startfile("C:\Windows\System32\SnippingTool.exe")
                     SR.speak("Opening snipping tool....")
@@ -254,7 +254,7 @@ def mainframe():
                     SR.speak('sorry i am not able to find the path of snipping tool,please make sure you installed it')
                 break
 
-            elif there_exists(['open file manager','file manager','open my computer','my computer','open file explorer','file explorer','open this pc','this pc'],query):
+            elif there_exists(['open file manager','file manager','open my computer','my computer','open file explorer','file explorer','open this pc','this pc','launch file manager','launch my computer','launch file explorer','launch this pc'],query):
                 try:
                     os.startfile("C:\Windows\explorer.exe")
                     SR.speak("Opening File Explorer")
@@ -270,7 +270,7 @@ def mainframe():
                     SR.speak('sorry i am not able to open windows powershell.i think the path doesn\'t exist')
                 break
 
-            elif there_exists(['cmd','command prompt','command prom','commandpromt',],query):
+            elif there_exists(['cmd','command prompt','command prom','commandpromt','launch commandprompt','launch command prompt'],query):
                 try:
                     os.startfile(r'C:\\Windows\\System32\\cmd.exe')
                     SR.speak("Opening command prompt")
@@ -278,7 +278,7 @@ def mainframe():
                     SR.speak('sorry i am not able to open command prompt.i think the path doesn\'t exist')
                 break
 
-            elif there_exists(['show me performance of my system','open performance monitor','performance monitor','performance of my computer','performance of this computer'],query):
+            elif there_exists(['show me performance of my system','open performance monitor','performance monitor','performance of my computer','performance of this computer','launch performance monitor'],query):
                 try:
                     os.startfile("C:\\Windows\\System32\\perfmon.exe")
                     SR.speak("Opening performance monitor")
@@ -286,7 +286,7 @@ def mainframe():
                     SR.speak('sorry i am not able to open performance monitor.i think the path doesn\'t exist')
                 break
 
-            elif there_exists(['open settings','open control panel','open this computer setting Window','open computer setting Window'   ,'open computer settings','open setting','show me settings','open my computer settings'],query):
+            elif there_exists(['open settings','open control panel','open this computer setting Window','open computer setting Window','open computer settings','open setting','show me settings','open my computer settings','launch settings','launch control panel'],query):
                 try:
                     os.startfile('C:\\Windows\\System32\\control.exe')
                     SR.speak("Opening settings...")
@@ -294,16 +294,7 @@ def mainframe():
                     SR.speak('sorry i am not able to open settings.i think the path doesn\'t exist')
                 break
 
-            elif there_exists(['open your setting','open your settings','open settiing window','show me setting window','open voice assistant settings'],query):
-                try:
-                    SR.speak("Opening my Setting window..")
-                    sett_wind=Annex.SettingWindow()
-                    sett_wind.settingWindow(root)
-                except Exception as e:
-                    SR.speak('sorry i am not able to open my settings now.i will resolve the error and get back to you soon.')
-                break
-
-            elif there_exists(['open vlc','vlc media player','vlc player'],query):
+            elif there_exists(['open vlc','vlc media player','vlc player','launch vlc player'],query):
                 try:
                     os.startfile(r"C:\\Program Files (x86)\\VideoLAN\\VLC\\vlc.exe")
                     SR.speak("Opening VLC media player")
@@ -311,7 +302,7 @@ def mainframe():
                     SR.speak('sorry i am not able to open vlc player.please make sure you installed it')
                 break
 
-            elif there_exists(['windows media player'],query):
+            elif there_exists(['windows media player','launch windows media player'],query):
                 try:
                     os.startfile(r"C:\\Program Files (x86)\\Windows Media Player\\wmplayer.exe")
                     SR.speak("Opening windows media player")
@@ -319,15 +310,7 @@ def mainframe():
                     SR.speak('sorry i am not able to open windows media player.please make sure the path exists')
                 break
 
-            elif there_exists(['open whatsapp'],query):
-                try:
-                    os.startfile('C:\\Users\\ajayaju\\AppData\\Local\\WhatsApp\\WhatsApp.exe')
-                    SR.speak("Opening whatsApp")
-                except Exception as e:
-                    SR.speak('sorry i am not able to open whatsapp.please make sure you installed it')
-                break
-
-            elif there_exists(['open chrome'],query):
+            elif there_exists(['open chrome','launch chrome'],query):
                 try:
                     os.startfile(chrome_path)
                     SR.speak("Opening chrome browser")
@@ -335,7 +318,7 @@ def mainframe():
                     SR.speak('sorry i am not able to open chrome browser.please make sure you installed it')
                 break
 
-            elif there_exists(['open microsoft edge','microsoft edge'],query):
+            elif there_exists(['open microsoft edge','microsoft edge','launch microsoft edge'],query):
                 try:
                     os.startfile("C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe")
                     SR.speak("Opening microsoft edge browser")
@@ -343,19 +326,42 @@ def mainframe():
                     SR.speak('sorry i am not able to open microsoft edge browser.please make sure you installed it')
                 break
 
+
+            #whatsapp message
+            elif there_exists(['open whatsapp messeaging','send a whatsapp message','send whatsapp message','please send a whatsapp message'],query):
+                whatsapp=Annex.WhatsApp(scrollable_text)
+                whatsapp.send()
+                del whatsapp
+
+
+            # opening assistant settings
+            elif there_exists(['open your setting','open your settings','open settiing window','show me setting window','open voice assistant settings'],query):
+                try:
+                    SR.speak("Opening my Setting window..")
+                    sett_wind=Annex.SettingWindow()
+                    sett_wind.settingWindow(root)
+                except RuntimeError as r:
+                    pass
+                except Exception as e:
+                    SR.speak('sorry i am not able to open my settings now.i will resolve the error and get back to you soon.')
+                break
+
             
             # switching the windows
             elif there_exists(['switch the window','switch window'],query):
-                SR.speak("Okay sir, Switching the window")
-                pyautogui.keyDown("alt")
-                pyautogui.press("tab")
-                time.sleep(1)
-                pyautogui.keyUp("alt")
+                try:
+                    SR.speak("Okay sir, Switching the window")
+                    pyautogui.keyDown("alt")
+                    pyautogui.press("tab")
+                    time.sleep(1)
+                    pyautogui.keyUp("alt")
+                except Exception as e:
+                    SR.speak('not able to switch the window')
                 break
 
 
             # system stats
-            elif there_exists(['system','system stats','my system stats'],query):
+            elif there_exists(['system stats','my system stats','system'],query):
                 try:
                     info = Annex.SystemInfo()
                     sys_info = info.system_stats()
@@ -367,9 +373,12 @@ def mainframe():
 
             # system's current ip address
             elif there_exists(['ip address','show ip','tell system ip','what\'s my ip'],query):
-                ip = requests.get('https://api.ipify.org').text
-                # print(ip)
-                SR.speak(f"Your ip address is {ip}")
+                try:
+                    ip = requests.get('https://api.ipify.org').text
+                    # print(ip)
+                    SR.speak(f"Your ip address is {ip}")
+                except Exception as e:
+                    SR.speak('failed to find ip address,please check again later')
                 
             
             # bluetooth file sharing
@@ -417,7 +426,7 @@ def mainframe():
             #text to speech conversion
             elif there_exists(['text to speech','convert my notes to voice'],query):
                 SR.speak("Opening Text to Speech mode")
-                TS=Annex.TextToSpeech()
+                TS=Annex.TextToSpeech(scrollable_text)
                 del TS
                 break
 
@@ -626,7 +635,7 @@ def mainframe():
                 
 
             # password generator
-            elif there_exists(['suggest me a password','password suggestion','i want a password','give me a password'],query):
+            elif there_exists(['suggest me a password','password suggestion','i want a password','give me a password','password generator'],query):
                 m3=Annex.PasswordGenerator()
                 m3.givePSWD(scrollable_text,root)
                 del m3
@@ -764,7 +773,7 @@ def mainframe():
 
 
             #passing if nothing in the query
-            elif there_exists(['none'],query):
+            elif there_exists(['none','no'],query):
                 pass
     
 

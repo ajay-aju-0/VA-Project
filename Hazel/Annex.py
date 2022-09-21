@@ -1,5 +1,6 @@
 import pyttsx3
 import pyautogui 
+import pywhatkit
 import sounddevice 
 import cv2
 import playsound
@@ -24,6 +25,8 @@ import math
 import string
 import pyperclip
 import PyPDF2
+import docx
+import time
 
 
 class SetColor:
@@ -68,7 +71,7 @@ class SetColor:
             elif col_choice in ['nothing','none']:
                 break
             else:
-                SR.speak("dont match with any choice.please tell index from given options")
+                SR.speak("dont match with any choice.please tell colours from given options")
 
         if bcolor:
             mycursor.execute('update colors set background=?',(bcolor,))
@@ -85,7 +88,7 @@ class SetColor:
             tcolor=""
             SR.speak("Available text colors are:")
             SR.updating_ST_No_newline('1.Blue\n2.Green\n3.Black\n4.Yellow\n5.White')
-            SR.speak("Tell the name of color from above list that you want to set as background")
+            SR.speak("\nTell the name of color from above list that you want to set as background")
             col_choice = SR.takeCommand().lower()
             if col_choice == ['blue','blu']:
                 tcolor = "blue"
@@ -346,12 +349,13 @@ class TextToSpeech:
         --> Clear button for clearing the text in textarea
         --> Open button for selecting a file and write its contents in text area 
     """
-    def __init__(self):
+    def __init__(self,scrollable_text):
         self.root=Tk()
         self.root.resizable(0,0)
         self.root.configure(background='white')
         self.root.title("Text to Speech")
         self.root.iconbitmap('Icons/text_to_speech.ico')
+        self.scrollable_text = scrollable_text
         #root widget
         self.text=scrolledtext.ScrolledText(self.root,width=30,height=10,wrap=WORD,padx=10,pady=10,borderwidth=5,relief=RIDGE)
         self.text.grid(row=0,columnspan=3)
@@ -370,12 +374,13 @@ class TextToSpeech:
     def opentxt(self):
         self.root.focus_force()
         try:
-            file_path=filedialog.askopenfilename(initialdir =r"C:\\Users\\ajayaju\\Documents",title="Select file",filetypes=(('text file',"*.txt"),("All files", "*.*")))
-            print(file_path)
+            file_path=filedialog.askopenfilename(initialdir =r"C:\\Users\\ajayaju\\Documents",title="Select file",filetypes=(("text file","*.txt"),("pdf file","*.pdf"),("doc file","*.docx"),("All files", "*.*")))
+            # print(file_path)
             with open(file_path,'r') as f:
-                is_pdf = f.name.split('/')[-1].split('.')[-1]
+                file_type = f.name.split('/')[-1].split('.')[-1]
                 
-                if is_pdf == 'pdf':
+                                                        
+                if file_type == 'pdf':                        # opening pdf file for reading
                     pdf_file = PyPDF2.PdfFileReader(file_path)
                     pages = pdf_file.getNumPages()
                     for page in range(pages):
@@ -388,7 +393,24 @@ class TextToSpeech:
                         SR=SpeakRecognition(None)
                         SR.nonPrintSpeak(page_stuff)
                         del SR
-                else:
+
+                elif file_type == 'docx':           # opening microsoft word document for reading
+                    doc = docx.Document(file_path)
+                    fulltext = []
+                    for para in doc.paragraphs:
+                        # print(para.text)
+                        fulltext.append(para.text)
+                        data = "\n".join(fulltext)
+                        if data:
+                            self.root.focus_force()
+                            self.text.delete(1.0,END)
+                            self.text.insert(INSERT,data)
+                            self.text.update()
+                            SR=SpeakRecognition(None)
+                            SR.nonPrintSpeak(para)
+                            del SR
+
+                else:                               #opening text file for reading
                     g = f.read()
                     self.root.focus_force()
                     self.text.delete(1.0,END)
@@ -398,7 +420,16 @@ class TextToSpeech:
                     SR.nonPrintSpeak(g)
                     del SR
         except FileNotFoundError as e:
+            SR=SpeakRecognition(self.scrollable_text)
+            SR.speak("not able to open the file.please check whether the file exists or not")
             self.root.focus_force()
+
+        except UnicodeDecodeError as u:
+            SR=SpeakRecognition(self.scrollable_text)
+            SR.speak("file type not supported please select text files or documents or pdf's to read")
+            self.root.focus_force()
+
+        except Exception as e:
             pass
 
 
@@ -527,6 +558,8 @@ class SettingWindow:
         #Database connection
         conn = sqlite3.connect('Hazel.db')
         mycursor=conn.cursor()
+        mycursor.execute("create table if not exists speech_rate(rate int default 230)")
+        mycursor.execute("create table if not exists volume(vol int default 6)")
         Speech_Rate=self.speech_rate_text_box.get()
         if not (Speech_Rate.isdigit()):
             tmsg.showinfo("Error.",f"Please enter integers.")
@@ -593,6 +626,40 @@ class SystemInfo:
         total_memory = self.convert_size(psutil.virtual_memory().total)
         final_res = f"Currently {cpu_stats} percent of CPU, {memory_in_use} of RAM out of total {total_memory}  is being used and battery level is at {battery_percent} percent"
         return final_res
+
+
+class WhatsApp:
+    '''
+    A class to open whatsapp web and send whatsapp messages
+    '''
+
+    def __init__(self,scrollable_text):
+        self.SR=SpeakRecognition(scrollable_text)
+
+    def send(self):
+        self.SR.speak("Please tell me the mobile number whom do you want to send message.")
+        mobile_number=None
+        while(True):
+            mobile_number=self.SR.takeCommand().replace(' ','')
+            if mobile_number[0]=='0':
+                mobile_number=mobile_number[1:]
+            if not mobile_number.isdigit() or len(mobile_number)!=10:
+                self.SR.speak("Please say it again")
+            else:
+                break
+        mobile_number.replace(' ','')
+        self.SR.speak("Tell me your message......")
+        message=self.SR.takeCommand()
+        self.SR.speak("Opening whatsapp web to send your message.")
+        self.SR.speak("Please be patient, sometimes it takes time.\nOR In some cases it does not works.")
+        while(True):
+            try:
+                pywhatkit.sendwhatmsg("+91"+mobile_number,message,datetime.datetime.now().hour,datetime.datetime.now().minute+1)
+                break
+            except Exception:
+                pass
+        time.sleep(20)
+        self.SR.speak('Message sent succesfully.')
 
 
 class MailSend:
