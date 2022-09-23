@@ -18,7 +18,7 @@ But not all alternative will work.
 
 7) Ask him his name.
 
-8) Open -   youtube,google,file explorer, command prompt, chrome, etc.
+8) Open/launch <software application name>-   youtube,google,file explorer, command prompt, chrome, etc.
 
 9) Open google search ---------
 

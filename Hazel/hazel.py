@@ -32,8 +32,10 @@ from config.config import *
 app_id = wolframalpha_id     # API key for wolframalpha
 
 
+#****************************** LOCAL MEMORY ****************************************#
 
-#==================== Memory for Greetings ====================================
+
+#==================== Memory for Greetings ====================
 
 morning = ['Good Morning!!!','Isn\'t it a beautiful day today?','May this day bring new opportunities and successes for you. Good morning!',
             'This is not just another day. It is yet another chance to make your dreams come true. Get up and get started. Good morning!',
@@ -62,10 +64,7 @@ night = ['It is a night time.','Night time code time!!','This night is dark as y
          'Night time is the time when our thinking and feeling gains it peakness!'
         ]
 
-#============================================================================
-
-
-#==================== Memory for 'how are you' query ==========================
+#==================== Memory for 'how are you' query ==============
 
 howareyou= ['Good to hear from you! How may I help','I\'m fine, thank you. What can I do for you?',
             'Very Good, How may I help you','Wonderful thanks, What can I do for you?',
@@ -73,17 +72,15 @@ howareyou= ['Good to hear from you! How may I help','I\'m fine, thank you. What 
             'I\'m doing great, thanks for asking. Anything I can help with'
         ]
 
-#============================================================================
-
-
-#================ EMAIL dictionary for sending emails =======================
+#==================== EMAIL dictionary for sending emails =========
 
 EMAIL_DIC = {
     'myself': 'ajaypadmanabhan01@gmail.com',
     'my official email': 'ajaypadmanabhan01@gmail.com',
 }
 
-#============================================================================
+
+#********************************* LOCAL MEMORY END *********************************#
 
 
 #setting chrome path
@@ -182,11 +179,30 @@ def mainframe():
 
 
             # display calendar
-            elif there_exists(['show me calendar','display calendar','show calendar'],query):
-                todays_date = datetime.date.today()
-                obj = Annex.Calender(todays_date)
-                obj.showCalender()
+            elif there_exists(['show me calendar','display calendar','show calendar','open calender'],query):
+                try:
+                    todays_date = datetime.date.today()
+                    obj = Annex.Calender(todays_date)
+                    obj.showCalender()
+                    SR.nonPrintSpeak('opening calender for you')
+                except Exception as e:
+                    SR.speak("not able to display calender,please try again later")
                 break
+
+
+            # calender events
+            elif there_exists(['what do i have','do i have plans','am i busy','do i have plan'],query):
+                try:
+                    todays_date = datetime.date.today()
+                    obj = Annex.Calender(todays_date)
+                    service = obj.authenticate_google()
+                    date = obj.get_date(query) 
+                    if date:
+                        return obj.get_events(date, service,scrollable_text)
+                    else:
+                        pass
+                except Exception as e:
+                    SR.speak("unable to fetch your events.Please try later")
 
 
             # opening software applications
@@ -310,7 +326,7 @@ def mainframe():
                     SR.speak('sorry i am not able to open windows media player.please make sure the path exists')
                 break
 
-            elif there_exists(['open chrome','launch chrome'],query):
+            elif there_exists(['open chrome','launch chrome','open google chrome','launch google chrome'],query):
                 try:
                     os.startfile(chrome_path)
                     SR.speak("Opening chrome browser")
