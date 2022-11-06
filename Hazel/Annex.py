@@ -1,6 +1,5 @@
 import pyttsx3
 import pyautogui 
-import pywhatkit
 import sounddevice 
 import cv2
 import playsound
@@ -16,7 +15,7 @@ from tkcalendar import Calendar
 from functools import partial
 import sqlite3
 import datetime 
-import os 
+import os
 import subprocess 
 import random
 import smtplib
@@ -27,11 +26,12 @@ import pyperclip
 import PyPDF2
 import docx
 import time
-import pickle,pytz
+import pytz
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
+import matplotlib.pyplot as plt
 
 
 class SetColor:
@@ -131,6 +131,7 @@ class GetColor:
         try:
             conn = sqlite3.connect('Hazel.db')
             mycursor=conn.cursor()
+            mycursor.execute("create table if not exists colors(background varchar(20) default 'sky blue')")
             mycursor.execute('select background from colors')
             color = mycursor.fetchone()[0]
             conn.commit()
@@ -143,6 +144,7 @@ class GetColor:
         try:
             conn = sqlite3.connect('Hazel.db')
             mycursor=conn.cursor()
+            mycursor.execute("create table if not exists colors(foreground varchar(20) default 'black')")
             mycursor.execute('select foreground from colors')
             color = mycursor.fetchone()[0]
             conn.commit()
@@ -268,10 +270,14 @@ class Calender:
         """
 
         SCOPES = ["https://www.googleapis.com/auth/calendar.readonly"]
+
         creds = None
-        # The file token.pickle stores the user's access and refresh tokens, and is
-        # created automatically when the authorization flow completes for the first
-        # time.
+
+        """
+         The file token.pickle stores the user's access and refresh tokens, and is
+         created automatically when the authorization flow completes for the first
+         time.
+        """
         if os.path.exists('token.json'):
             creds = Credentials.from_authorized_user_file('token.json', SCOPES)
         # If there are no (valid) credentials available, let the user log in.
@@ -343,7 +349,6 @@ class Calender:
             return datetime.date(month=month, day=day, year=year)
 
     def get_events(self, day, service, scrollable_text):
-        print("get events")
         # Call the Calendar API
         date = datetime.datetime.combine(day, datetime.datetime.min.time())
         end_date = datetime.datetime.combine(day, datetime.datetime.max.time())
@@ -547,7 +552,7 @@ class TextToSpeech:
 
         except UnicodeDecodeError as u:
             SR=SpeakRecognition(self.scrollable_text)
-            SR.speak("file type not supported please select text files or documents or pdf's to read")
+            SR.speak("file type not supported please select text files or word documents or pdf's to read")
             self.root.focus_force()
 
         except Exception as e:
@@ -750,14 +755,15 @@ class SystemInfo:
 
 
 class WhatsApp:
-    '''
+    """
     A class to open whatsapp web and send whatsapp messages
-    '''
-
+    """
+    
     def __init__(self,scrollable_text):
         self.SR=SpeakRecognition(scrollable_text)
 
     def send(self):
+        import pywhatkit
         self.SR.speak("Please tell me the mobile number whom do you want to send message.")
         mobile_number=None
         while(True):
@@ -783,30 +789,83 @@ class WhatsApp:
         self.SR.speak('Message sent succesfully.')
 
 
-class MailSend:
-    """
-    A class for sending email messages
-    """
+class SketchImage:
+    def __init__(self,root,scrollable_text):
+        self.root = root
+        self.SR = SpeakRecognition(scrollable_text)
+        self.file_path = ""
 
-    def __init__(self, semail,spass,remail,msg):
-        self.sender_mail = semail
-        self.sender_passwd = spass
-        self.receiver_mail = remail
-        self.message = msg
+    def openFile(self):
+        self.file_path=filedialog.askopenfilename(initialdir =r"C:\\Users\\ajayaju\\OneDrive\\Pictures",title="Select file",filetypes=(("jpg","*.jpg"),("png","*.png"),("All files", "*.*")))
+        with open(self.file_path,'r') as f:
+            # print(self.file_path)
+            self.filename = f.name.split('/')[-1]
+            l2 = Label(self.win,text=self.filename)
+            l2.place(x=140,y=20)
+            self.win.focus_force()
 
-    def mail(self):
-        try:
-            mail = smtplib.SMTP('smtp.gmail.com', 587)
-            mail.ehlo()
-            mail.starttls()
-            mail.login(self.sender_mail, self.sender_passwd)
-            mail.sendmail(self.sender_mail, self.receiver_mail, self.message)
-            mail.close()
-            return True
-        except Exception as e:
-            print(e)
-            return False
-            
+    def submitFile(self):
+        self.win.destroy()
+
+        self.SR.speak("converting....")
+        time.sleep(2)
+
+        img = cv2.imread(self.file_path)
+        gray_image = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY) 
+
+        inverted_gray_image = 255 - gray_image
+
+        blurred_img = cv2.GaussianBlur(inverted_gray_image, (21,21),0) 
+
+        inverted_blurred_img = 255 - blurred_img
+
+        pencil_sketch_IMG = cv2.divide(gray_image, inverted_blurred_img, scale = 256.0)
+
+        a=os.getcwd()
+        if not os.path.exists("Sketches"):
+            os.mkdir("Sketches")
+        os.chdir(a+'\Sketches')
+
+        self.sketchname ="sketch-"+str(datetime.datetime.now()).replace(':','-')+".jpg"
+        # print(self.sketchname)
+
+
+        cv2.imwrite(self.sketchname, pencil_sketch_IMG)
+
+        # cv2.imshow('Pencil Sketch', pencil_sketch_IMG)
+
+        cv2.waitKey(0)
+
+        self.SR.speak("image converted to sketch successfully")
+
+        plt.figure(figsize=(12,8))
+        plt.subplot(1,2,1)
+        plt.title('Original image', size=18)
+        plt.imshow(img)
+        plt.axis('off')
+        plt.subplot(1,2,2)
+        plt.title('Sketch', size=18)
+        rgb_sketch=cv2.cvtColor(pencil_sketch_IMG, cv2.COLOR_BGR2RGB)
+        plt.imshow(rgb_sketch)
+        plt.axis('off')
+        plt.show()
+
+
+    def Imagesketch(self):
+        self.win=Toplevel(master=self.root)
+        self.win.title("image sketch")
+        self.win.geometry("430x120+540+300")
+        self.win.title('image to sketch')
+        l1 = Label(self.win,text="Image selected:")
+        l1.place(x=15,y=20)
+
+        open_btn = Button(self.win,text="Open",width=7,bg="blue",fg="black",font=("TimesNewRoman",10,'bold'),command=self.openFile).place(x=190,y=50)
+        submit = Button(self.win,text="submit",width=7,bg="green",fg="white",font=("TimesNewRoman",10,'bold'),command=self.submitFile).place(x=295,y=50)
+
+
+        self.win.mainloop()
+        
+
 
 class News:
     """

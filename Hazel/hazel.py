@@ -10,7 +10,6 @@ import playsound
 import getpass
 import wikipedia
 import webbrowser 
-import pywhatkit 
 import pyautogui
 import pyjokes
 import Annex
@@ -21,50 +20,16 @@ from PIL import ImageTk,Image
 from functools import partial
 from geopy.geocoders import Nominatim
 from geopy.distance import great_circle
-from config.config import *
 
 '''
-* add games like pong,snake,and blocks game
-* if possible add image to sketch also.....
+* check every functionality.
 '''
-
-
-app_id = wolframalpha_id     # API key for wolframalpha
 
 
 #****************************** LOCAL MEMORY ****************************************#
 
 
-#==================== Memory for Greetings ====================
-
-morning = ['Good Morning!!!','Isn\'t it a beautiful day today?','May this day bring new opportunities and successes for you. Good morning!',
-            'This is not just another day. It is yet another chance to make your dreams come true. Get up and get started. Good morning!',
-            'Wishing you a day full of sunny smiles and happy thoughts. Good morning!','Enjoy life now! Good morning!!!',
-            'Good morning. Wake up and be awesome!','Just the thought of you brightens up my morning. Good morning!',
-            'Morning comes whether you set the alarm or not. Wake up, sleepyhead!','As the day begins, remember that I am your friend…you’re welcome!'
-        ]
-
-afternoon = ['Good Afternoon!','Thinking of you today — have a good afternoon!','A wish for a wonderful afternoon for you and yours!',
-             'Here\'s a wish for a fun afternoon and the gentle breeze that comes with it.','Half of the day is over; have a marvelous afternoon and enjoy the rest of the day!',
-             'Remember, every day I am wishing you the best morning, afternoon, and night!','Today, there will be a beautiful sunset after you have a good afternoon!',
-             'Wishing you a happy day and a fabulous afternoon!','May this afternoon bring you delightful surprises.',
-             'The afternoon is when the day starts to slow down. Enjoy yourself!'
-        ]
-
-evening = ['Good Evening!!','Lots of love for this sweet evening.','Zestful energetic evening',
-           'Zestful exciting evening!','Hey delightful evening.','Mesmerizing evening for you.',
-           'This evening is as adorable as you.'
-        ]
-
-night = ['It is a night time.','Night time code time!!','This night is dark as your IDE\'s theme.',
-         'Hey, Owl how is your work going?','Night men are smart men.','Nothing like a nighttime stroll to give you ideas..',
-         'I like the night. Without the dark, we\'d never see the stars.Night is to see dreams and day is to make them true.',
-         'The darkest night produce the brightest stars.','The nighttime of the body is the daytime of the soul.',
-         'Night is beautiful when you are happy, calming when you are stressed and lonesome when you are missing someone.',
-         'Night time is the time when our thinking and feeling gains it peakness!'
-        ]
-
-#==================== Memory for 'how are you' query ==============
+#==================== Memory for 'how are you' query ====================
 
 howareyou= ['Good to hear from you! How may I help','I\'m fine, thank you. What can I do for you?',
             'Very Good, How may I help you','Wonderful thanks, What can I do for you?',
@@ -72,24 +37,20 @@ howareyou= ['Good to hear from you! How may I help','I\'m fine, thank you. What 
             'I\'m doing great, thanks for asking. Anything I can help with'
         ]
 
-#==================== EMAIL dictionary for sending emails =========
+#==================== setting browser paths =============================
 
-EMAIL_DIC = {
-    'myself': 'ajaypadmanabhan01@gmail.com',
-    'my official email': 'ajaypadmanabhan01@gmail.com',
-}
+chrome_path="C://Program Files//Google//Chrome//Application//chrome.exe %s"       #chrome path
+
+edge_path ="C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe %s" #edge path
+
+#==================== setting variables for background and text colours==
+
+background = ""
+foreground = ""
 
 
 #********************************* LOCAL MEMORY END *********************************#
 
-
-#setting chrome path
-chrome_path="C://Program Files//Google//Chrome//Application//chrome.exe %s"
-
-
-#setting variables for background and text colours
-background = ""
-foreground = ""
 
 
 def there_exists(terms,query):
@@ -101,7 +62,7 @@ def there_exists(terms,query):
 
 def computational_intelligence(question):
     try:
-        client = wolframalpha.Client(app_id)
+        client = wolframalpha.Client("JPK4EE-L7KR3XWP9A")
         answer = client.query(question)
         answer = next(answer.results).text
         # print(answer)
@@ -126,17 +87,13 @@ def greet():
     ''' greeting according to time '''
     hour=int(datetime.datetime.now().hour)
     if hour>=4 and hour<12:
-        greet = random.choice(morning)
-        SR.speak(greet)
+        SR.speak('Good morning')
     elif hour>=12 and hour<18:
-        greet = random.choice(afternoon)
-        SR.speak(greet)
+        SR.speak('Good afternoon')
     elif hour>=18 and hour<20:
-        greet = random.choice(evening)
-        SR.speak(greet)
+        SR.speak('Good evening')
     else:
-        greet = random.choice(night)
-        SR.speak(greet)
+        SR.speak('it\'s night time' )
 
     SR.speak("\nMyself Hazel. How may I help you?")
 
@@ -163,7 +120,7 @@ def mainframe():
 
 
             # what is my name
-            elif there_exists(['what is my name','tell me my name',"i don't remember my name"],query):
+            elif there_exists(['what is my name','tell me my name',"i don't remember my name","what's my name","who am i"],query):
                 SR.speak("Your name is "+str(getpass.getuser()))
 
 
@@ -410,37 +367,36 @@ def mainframe():
                 break
 
 
-            # sending email's
-            elif there_exists(['email','send mail','send email'],query):
-                sender_email = email
-                sender_password = email_password
+            # # sending email's
+            # elif there_exists(['email','send mail','send email'],query):
+            #     sender_email = ''
+            #     sender_password = ''
 
-                try:
-                    SR.speak("Whom do you want to email sir ?")
-                    recipient = SR.takeCommand().lower()
-                    receiver_email = EMAIL_DIC.get(recipient)
+            #     try:
+            #         SR.speak("Whom do you want to email sir ?")
+            #         recipient = SR.takeCommand().lower()
+            #         receiver_email = EMAIL_DIC.get(recipient)
 
-                    if receiver_email:
-                        SR.speak("What is the subject sir ?")
-                        subject = SR.takeCommand()
-                        SR.speak("What should I say?")
-                        message = SR.takeCommand()
-                        msg = 'Subject: {}\n\n{}'.format(subject, message)
-                        obj = Annex.MailSend(sender_email,sender_password,receiver_email,msg)
-                        if obj.mail():
-                            SR.speak("Email has been successfully sent")
-                        else:
-                            SR.speak("there was an error while sending the mail.")
-                            SR.speak("please check your email settings and resolve it")
-                    else:
-                        SR.speak("I coudn't find the requested person's email in my database. Please try again with a different name")
-                except:
-                    SR.speak("Sorry sir. Couldn't send your mail. Please try again")
-                break
-
+            #         if receiver_email:
+            #             SR.speak("What is the subject sir ?")
+            #             subject = SR.takeCommand()
+            #             SR.speak("What should I say?")
+            #             message = SR.takeCommand()
+            #             msg = 'Subject: {}\n\n{}'.format(subject, message)
+            #             obj = Annex.MailSend(sender_email,sender_password,receiver_email,msg)
+            #             if obj.mail():
+            #                 SR.speak("Email has been successfully sent")
+            #             else:
+            #                 SR.speak("there was an error while sending the mail.")
+            #                 SR.speak("please check your email settings and resolve it")
+            #         else:
+            #             SR.speak("I coudn't find the requested person's email in my database. Please try again with a different name")
+            #     except:
+            #         SR.speak("Sorry sir. Couldn't send your mail. Please try again")
+            #     break
 
             #text to speech conversion
-            elif there_exists(['text to speech','convert my notes to voice'],query):
+            elif there_exists(['text to speech','convert my notes to voice','convert my text into speech'],query):
                 SR.speak("Opening Text to Speech mode")
                 TS=Annex.TextToSpeech(scrollable_text)
                 del TS
@@ -449,45 +405,53 @@ def mainframe():
             
             # wikipedia search
             elif there_exists(['search wikipedia for','from wikipedia'],query):
-                SR.speak("Searching wikipedia...")
-                if 'search wikipedia for' in query:
-                    query=query.replace('search wikipedia for','')
-                    results=wikipedia.summary(query,sentences=2)
-                    SR.speak("According to wikipedia:\n")
-                    SR.speak(results)
-                    break
-                elif 'from wikipedia' in query:
-                    query=query.replace('from wikipedia','')
-                    results=wikipedia.summary(query,sentences=2)
-                    SR.speak("According to wikipedia:\n")
-                    SR.speak(results)
-                    break
+                try:
+                    SR.speak("Searching wikipedia...")
+                    if 'search wikipedia for' in query:
+                        query=query.replace('search wikipedia for','')
+                        results=wikipedia.summary(query,sentences=2)
+                        SR.speak("According to wikipedia:\n")
+                        SR.speak(results)
+                        
+                    elif 'from wikipedia' in query:
+                        query=query.replace('from wikipedia','')
+                        results=wikipedia.summary(query,sentences=2)
+                        SR.speak("According to wikipedia:\n")
+                        SR.speak(results)
+                except wikipedia.exceptions.PageError as p:
+                    SR.speak("sorry sir i am not able to find an answer for this in wikipedia")
+                        
             elif there_exists(['wikipedia'],query):
-                SR.speak("Searching wikipedia....")
-                query=query.replace("wikipedia","")
-                results=wikipedia.summary(query,sentences=2)
-                SR.speak("According to wikipedia:\n")
-                SR.speak(results)
-                break
-
+                try:
+                    SR.speak("Searching wikipedia....")
+                    query=query.replace("wikipedia","")
+                    results=wikipedia.summary(query,sentences=2)
+                    SR.speak("According to wikipedia:\n")
+                    SR.speak(results)
+                except wikipedia.exceptions.PageError as p:
+                    SR.speak("sorry sir i am not able to find an answer for this in wikipedia")
 
             # who is searcing mode
-            elif there_exists(['who is','who the heck is','who the hell is','who is this'],query):
-                query=query.replace("wikipedia","")
-                results=wikipedia.summary(query,sentences=1)
-                SR.speak("According to wikipdedia:  ")
-                SR.speak(results)
-                break
+            elif there_exists(['who is','who the heck is','who the hell is','who is this','tell me about'],query):
+                try:
+                    if "wikipedia" in query:
+                        query=query.replace("wikipedia","")
+                    results=wikipedia.summary(query,sentences=1)
+                    SR.speak("According to wikipdedia:  ")
+                    SR.speak(results)
+                except wikipedia.exceptions.PageError as p:
+                    SR.speak("sorry sir i am not able to find an answer for this in wikipedia")
                 
-
             # what is meant by
             elif there_exists(['what is meant by','what is mean by'],query):
-                results=wikipedia.summary(query,sentences=2)
-                SR.speak("According to wikipedia:\n")
-                SR.speak(results)
-                break
+                try:
+                    results=wikipedia.summary(query,sentences=2)
+                    SR.speak("According to wikipedia:\n")
+                    SR.speak(results)
+                except wikipedia.exceptions.PageError as p:
+                    SR.speak("sorry sir i am not able to find an answer for this in wikipedia")
+                
 
-            
             # it will give online results for the query
             elif there_exists(['search something for me','to do a little search','open search mode','i want to search something'],query):
                 SR.speak('What you want me to search for?')
@@ -495,19 +459,16 @@ def mainframe():
                 SR.speak(f"Showing results for {query}")
                 answer = computational_intelligence(query)
                 SR.speak(answer)
-                break
-
+                
             elif there_exists(['calculate','compute','+','-','*','x','/','plus','add','minus','subtract','divide','multiply','divided','multiplied'],query):
                 answer = computational_intelligence(query)
                 SR.speak(f"the result is {answer}")
-                break
-
+                
             # what is the capital
             elif there_exists(['what is the capital of','capital of','capital city of'],query):
                 answer = computational_intelligence(query)
                 SR.speak(answer)
-                break
-
+                
             # it will give the temperature
             elif there_exists(['temperature'],query):
                 answer = computational_intelligence(query)
@@ -517,6 +478,7 @@ def mainframe():
             # google, youtube and location
             # playing on youtube 
             elif there_exists(['open youtube and play','on youtube'],query):
+                import pywhatkit
                 if 'on youtube' in query:
                     SR.speak("Opening youtube")
                     pywhatkit.playonyt(query.replace('on youtube',''))
@@ -530,33 +492,51 @@ def mainframe():
                 break
             elif there_exists(['open youtube','access youtube'],query):
                 SR.speak("Opening youtube")
-                webbrowser.get(chrome_path).open("https://www.youtube.com")
+                if os.path.exists(chrome_path.replace('%s','')):
+                    webbrowser.get(chrome_path).open("https://www.youtube.com")
+                else:
+                    webbrowser.get(edge_path).open("https://www.youtube.com")
                 break
 
             # opening google and search
             elif there_exists(['open google and search','google and search'],query):
                 url='https://google.com/search?q='+query[query.find('for')+4:]
-                webbrowser.get(chrome_path).open(url)
+                if os.path.exists(chrome_path.replace('%s','')):
+                    webbrowser.get(chrome_path).open(url)
+                else:
+                    webbrowser.get(edge_path).open(url)
                 break
             elif there_exists(['open google'],query):
                 SR.speak("Opening google")
-                webbrowser.get(chrome_path).open("https://www.google.com")
+                if os.path.exists(chrome_path.replace('%s','')):
+                    webbrowser.get(chrome_path).open("https://www.google.com")
+                else:
+                    webbrowser.get(edge_path).open("https://www.google.com")
                 break
 
             # finding location
             elif there_exists(['find location of','find the location of','show location of','find location for','find the location for','show location for'],query):
                 if 'of' in query:
                     url='https://google.nl/maps/place/'+query[query.find('of')+3:]+'/&amp'
-                    webbrowser.get(chrome_path).open(url)
+                    if os.path.exists(chrome_path.replace('%s','')):
+                        webbrowser.get(chrome_path).open(url)
+                    else:
+                        webbrowser.get(edge_path).open(url)
                     break
                 elif 'for' in query:
                     url='https://google.nl/maps/place/'+query[query.find('for')+4:]+'/&amp'
-                    webbrowser.get(chrome_path).open(url)
+                    if os.path.exists(chrome_path.replace('%s','')):
+                        webbrowser.get(chrome_path).open(url)
+                    else:
+                        webbrowser.get(edge_path).open(url)
                     break
             elif there_exists(["what is my exact location","What is my location","my current location","exact current location",'where is my'],query):
                 url = "https://www.google.com/maps/search/Where+am+I+?/"
                 SR.speak("Showing your current location on google maps...")
-                webbrowser.get(chrome_path).open(url)
+                if os.path.exists(chrome_path.replace('%s','')):
+                    webbrowser.get(chrome_path).open(url)
+                else:
+                    webbrowser.get(edge_path).open(url)
                 break
             elif there_exists(["where am i"],query):
                 try:
@@ -608,22 +588,48 @@ def mainframe():
             # image search
             elif there_exists(['show me images of','images of','display images'],query):
                 url="https://www.google.com/search?tbm=isch&q="+query[query.find('of')+3:]
-                webbrowser.get(chrome_path).open(url)
+                if os.path.exists(chrome_path.replace('%s','')):
+                    webbrowser.get(chrome_path).open(url)
+                else:
+                    webbrowser.get(edge_path).open(url)
                 break
-            elif there_exists(['search for','do a little searching for','show me results for','show me result for','start searching for'],query):
+
+            elif there_exists(['search for','do a little searching for','show me results for','show me result for','start searching for','do a little search for'],query):
                 SR.speak("Searching.....")
-                if 'search for' in query:
-                    SR.speak(f"Showing results for {query.replace('search for','')}")
-                    pywhatkit.search(query.replace('search for',''))
-                elif 'do a little searching for' in query:
+                if 'do a little searching for' in query:
                     SR.speak(f"Showing results for {query.replace('do a little searching for','')}")
-                    pywhatkit.search(query.replace('do a little searching for',''))
+                elif 'do a little search for' in query:
+                    SR.speak(f"Showing results for {query.replace('do a little search for','')}")
+                elif 'search for' in query:
+                    SR.speak(f"Showing results for {query.replace('search for','')}")           
                 elif 'show me results for' in query:
-                    SR.speak(f"Showing results for {query.replace('show me results for','')}")
-                    pywhatkit(query.replace('show me results for',''))
+                    SR.speak(f"Showing results for {query.replace('show me results for','')}")                   
+                elif 'show me result for' in query:
+                    SR.speak(f"Showing results for {query.replace('show me result for','')}")
                 elif 'start searching for' in query:
                     SR.speak(f"Showing results for {query.replace('start searching for','')}")
-                    pywhatkit(query.replace('start searching for',''))
+                    
+                url="https://www.google.com/search?tbm=isch&q="+query[query.find('for')+4:]
+                if os.path.exists(chrome_path.replace('%s','')):
+                    webbrowser.get(chrome_path).open(url)
+                else:
+                    webbrowser.get(edge_path).open(url)
+                break
+
+
+            #open mail
+            elif there_exists(['email','send mail','send email','mail'],query):
+                try:
+                    if os.path.exists("C:\\Users\\ajayaju\\OneDrive\\Desktop\\Mail.lnk"):
+                        os.startfile("C:\\Users\\ajayaju\\OneDrive\\Desktop\\Mail.lnk")
+                    else:
+                        url = "https://mail.google.com/"
+                        if os.path.exists(chrome_path.replace('%s','')):
+                            webbrowser.get(chrome_path).open(url)
+                        else:
+                            webbrowser.get(edge_path).open(url)
+                except Exception as e:
+                    SR.speak("i am not able to open mail now, please try after some time")
                 break
 
 
@@ -631,7 +637,6 @@ def mainframe():
             elif there_exists(['top 5 news','top five news','listen some news','news of today'],query):
                 news=Annex.News(scrollable_text)
                 news.show()
-                break
 
 
             # jokes
@@ -670,7 +675,6 @@ def mainframe():
             elif there_exists(['close the note','close notepad'],query):
                 SR.speak("Okay sir, closing notepad")
                 os.system("taskkill /f /im notepad.exe")
-                break
 
 
             # taking photo
@@ -719,6 +723,13 @@ def mainframe():
                 os.startfile(os.path.join(music_dir,songs[index]))
                 break
 
+            #image to sketch
+            elif there_exists(['image to sketch','sketch an image','sketch image','create a sketch'],query):
+                sketch = Annex.SketchImage(root,scrollable_text)
+                SR.speak("select any image file to convert.")
+                sketch.Imagesketch()
+                break
+
 
             #play game
             elif there_exists(['would like to play some games','play some games','would like to play some game','want to play some games','want to play game','want to play games','play games','open games','play game','open game'],query):
@@ -753,7 +764,7 @@ def mainframe():
 
 
             #changing the background and foreground color
-            elif there_exists(['change colour','change assistant colour','background colour','text colour'],query):
+            elif there_exists(['change colour','change assistant colour','background colour','back ground colour','text colour'],query):
                 col = Annex.SetColor(scrollable_text)
                 while True:
                     SR.speak("which color do you want to change,background or text or both")
@@ -774,8 +785,7 @@ def mainframe():
                     elif there_exists(['nothing','no','none'],choice):
                         break
                     else:
-                        SR.speak("choice doesn't match any......please retry")
-                break
+                        SR.speak("choice doesn't match any......please retry")                
             
 
             #hiding and visibling all files in this folder
@@ -811,10 +821,23 @@ def mainframe():
         pass
 
     except Exception as e:
+        print(e.__class__)
         SR.speak('unable to start ,Please check your connection')
         sys.exit()
 
 
+def startUp():
+    SR.speak("Initializing")
+    SR.speak("Starting all systems applications")
+    SR.speak("Installing and checking all drivers")
+    SR.speak("Caliberating and examining all the core processors")
+    SR.speak("Checking the internet connection")
+    SR.speak("Wait a moment sir")
+    SR.speak("All drivers are up and running")
+    SR.speak("All systems have been activated")
+    SR.speak("Now I am online")
+    SR.speak("click speak button to give me commands")
+    
 
 
 def generate(n):
@@ -829,7 +852,10 @@ class MainframeThread(threading.Thread):
         self.threadID = threadID
         self.name = name
     def run(self):
-        mainframe()
+        try:
+            mainframe()
+        except RuntimeError as r:
+            pass
 
 
 def Launching_thread():
@@ -852,22 +878,28 @@ if __name__=="__main__":
     root.resizable(0,0)
     root.title("Hazel")
     root.configure(bg='#2c4557')
+
     col = Annex.GetColor()
     background = col.getBackground()
-    # print(background)
     foreground = col.getForeground()
-    # print(foreground)
+
     scrollable_text=scrolledtext.ScrolledText(root,state='disabled',height=15,width=72,wrap=WORD,relief='sunken',bd=5,bg=background,fg=foreground,font='"Times New Roman" 13')
     scrollable_text.place(x=10,y=10)
+
+    Speak_label=Label(root,text="SPEAK:",fg="white",font='"Times New Roman" 15 ',borderwidth=0,bg='#2c4557')
+    Speak_label.place(x=340,y=480)
+    
+    SR = Annex.SpeakRecognition(scrollable_text)
+
     mic_img=Image.open(r'C:\\Users\\ajayaju\\new virtual assistant\\Hazel\\Icons\\Mic.png')
     mic_img=mic_img.resize((55,55),Image.ANTIALIAS)
     mic_img=ImageTk.PhotoImage(mic_img)
-    Speak_label=Label(root,text="SPEAK:",fg="white",font='"Times New Roman" 15 ',borderwidth=0,bg='#2c4557')
-    Speak_label.place(x=340,y=480)
-    # print(scrollable_text)
-    SR = Annex.SpeakRecognition(scrollable_text)
+
     Listen_Button=Button(root,image=mic_img,borderwidth=0,activebackground='#2c4557',bg='#2c4557',command=Launching_thread)
     Listen_Button.place(x=450,y=470)
+
+    # startUp()
+
     myMenu=Menu(root)
     m1=Menu(myMenu,tearoff=0) #tearoff=0 means the submenu can't be teared off from the window
     m1.add_command(label='Commands List',command=commandsList)
@@ -876,4 +908,5 @@ if __name__=="__main__":
     myMenu.add_cascade(label="Settings",command=partial(stng_win.settingWindow,root))
     myMenu.add_cascade(label="Clear Screen",command=clearScreen)
     root.config(menu=myMenu)
+
     root.mainloop()
