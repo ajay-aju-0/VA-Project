@@ -97,3 +97,6 @@ But not all alternative will work.
 45) open youtube and play
 
 46) open google and search 
+
+47) image to sketch/ sketch image/ create a sketch/ sketch an image
+

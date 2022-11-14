@@ -131,7 +131,7 @@ class GetColor:
         try:
             conn = sqlite3.connect('Hazel.db')
             mycursor=conn.cursor()
-            mycursor.execute("create table if not exists colors(background varchar(20) default 'sky blue')")
+            mycursor.execute("create table if not exists colors(background varchar(20) default 'sky blue',foreground varchar(20) default 'black')")
             mycursor.execute('select background from colors')
             color = mycursor.fetchone()[0]
             conn.commit()
@@ -144,7 +144,7 @@ class GetColor:
         try:
             conn = sqlite3.connect('Hazel.db')
             mycursor=conn.cursor()
-            mycursor.execute("create table if not exists colors(foreground varchar(20) default 'black')")
+            mycursor.execute("create table if not exists colors(background varchar(20) default 'sky blue',foreground varchar(20) default 'black')")
             mycursor.execute('select foreground from colors')
             color = mycursor.fetchone()[0]
             conn.commit()
@@ -166,6 +166,10 @@ class SpeakRecognition:
     # database connection
     conn = sqlite3.connect('Hazel.db')
     mycursor=conn.cursor()
+
+    # creating tables if not exists
+    mycursor.execute("create table if not exists speech_rate(rate int default 230)")
+    mycursor.execute("create table if not exists volume(vol int default 6)")
     
     engine=pyttsx3.init('sapi5')
     voices=engine.getProperty('voices')
@@ -268,7 +272,7 @@ class Calender:
         Shows basic usage of the Google Calendar API.
         Prints the start and name of the next 10 events on the user's calendar.
         """
-
+        
         SCOPES = ["https://www.googleapis.com/auth/calendar.readonly"]
 
         creds = None
@@ -350,6 +354,7 @@ class Calender:
 
     def get_events(self, day, service, scrollable_text):
         # Call the Calendar API
+        print("hi")
         date = datetime.datetime.combine(day, datetime.datetime.min.time())
         end_date = datetime.datetime.combine(day, datetime.datetime.max.time())
         utc = pytz.UTC

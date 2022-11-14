@@ -21,9 +21,6 @@ from functools import partial
 from geopy.geocoders import Nominatim
 from geopy.distance import great_circle
 
-'''
-* check every functionality.
-'''
 
 
 #****************************** LOCAL MEMORY ****************************************#
@@ -157,7 +154,7 @@ def mainframe():
                     if date:
                         return obj.get_events(date, service,scrollable_text)
                     else:
-                        pass
+                        SR.speak("please mention a date or month to check events")
                 except Exception as e:
                     SR.speak("unable to fetch your events.Please try later")
 
@@ -285,13 +282,13 @@ def mainframe():
 
             elif there_exists(['open chrome','launch chrome','open google chrome','launch google chrome'],query):
                 try:
-                    os.startfile(chrome_path)
+                    os.startfile("C://Program Files//Google//Chrome//Application//chrome.exe")
                     SR.speak("Opening chrome browser")
                 except Exception as e:
                     SR.speak('sorry i am not able to open chrome browser.please make sure you installed it')
                 break
 
-            elif there_exists(['open microsoft edge','microsoft edge','launch microsoft edge'],query):
+            elif there_exists(['open microsoft edge','microsoft edge','launch microsoft edge','edge browser'],query):
                 try:
                     os.startfile("C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe")
                     SR.speak("Opening microsoft edge browser")
@@ -714,12 +711,13 @@ def mainframe():
 
 
             #Playing music
-            elif there_exists(['play music','play some music for me','like to listen some music'],query):
+            elif there_exists(['play music','play some music for me','like to listen some music','play some music'],query):
                 SR.speak("Playing musics")
-                music_dir='C:\\Users\\ajayaju\\Music'
+                music_dir='C:\\Users\\ajayaju\\Music\\songs'
                 songs=os.listdir(music_dir)
                 # print(songs)
-                index=random.randint(0,50)
+                index=random.randint(0,len(songs))
+                # print(index)
                 os.startfile(os.path.join(music_dir,songs[index]))
                 break
 
@@ -898,7 +896,7 @@ if __name__=="__main__":
     Listen_Button=Button(root,image=mic_img,borderwidth=0,activebackground='#2c4557',bg='#2c4557',command=Launching_thread)
     Listen_Button.place(x=450,y=470)
 
-    # startUp()
+    startUp()
 
     myMenu=Menu(root)
     m1=Menu(myMenu,tearoff=0) #tearoff=0 means the submenu can't be teared off from the window
